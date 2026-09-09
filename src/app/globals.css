@@ -1,0 +1,660 @@
+@import "tailwindcss";
+
+/*
+ * THE CARTOGRAPHER — DESIGN SYSTEM
+ * ================================
+ * A light, warm, hand-made explorer's chart. Everything reads calm and airy;
+ * the life comes from motion, texture and craft — never from clutter.
+ * Body text ALWAYS lives on clean paper panels (`.paper-panel`), never on art.
+ */
+
+@theme {
+  /* --- Warm paper world (bone / cream, never stark white) --- */
+  --color-paper: #f7f3e9;
+  --color-paper-deep: #efe6d3;
+  --color-paper-panel: #fbf8f0;
+  --color-paper-edge: #ddd0b4;
+
+  /* --- Warm inks (text) --- */
+  --color-ink: #201c14;
+  --color-ink-soft: #4d4638;
+  --color-ink-faint: #8a8069;
+
+  /* --- Sea, sky & washes (the negative space) --- */
+  --color-sea: #e3ebe6;
+  --color-sea-deep: #cadfd8;
+  --color-sky: #eef1ec;
+
+  /* Layered sea depth (shore -> horizon) + sky + atmosphere */
+  --color-sea-1: #dcebe4;
+  --color-sea-2: #bfdcd2;
+  --color-sea-3: #9fc9bd;
+  --color-sea-4: #79b0a3;
+  --color-sky-top: #f6efe1;
+  --color-sky-low: #f0e7d5;
+  --color-sun: #f6e6bf;
+  --color-haze: #d7dbe0;
+
+  /* --- Territory accents (muted watercolor inks) --- */
+  --color-teal-ink: #3f7c75;
+  --color-ochre: #c0883c;
+  --color-terracotta: #c2765a;
+  --color-indigo-ink: #43506b;
+  --color-sage: #6e7b55;
+
+  /* --- Form --- */
+  --radius-panel: 14px;
+  --radius-pill: 999px;
+}
+
+/* Fonts are provided by next/font as --ff-* on <html>; map them to utilities. */
+@theme inline {
+  --font-display: var(--ff-display), Georgia, "Times New Roman", serif;
+  --font-body: var(--ff-body), Georgia, "Times New Roman", serif;
+  --font-hand: var(--ff-hand), "Segoe Script", "Bradley Hand", cursive;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 1.09rem;
+    line-height: 1.76;
+    letter-spacing: 0.003em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    font-optical-sizing: auto;
+    font-variation-settings: "SOFT" 32, "WONK" 0;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-ochre) 32%, transparent);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-teal-ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-paper-edge) transparent;
+  }
+}
+
+@layer components {
+  /* Fixed paper substrate: grain + a gentle vignette so the world feels printed. */
+  .paper-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      url("/textures/paper-grain.svg"),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 2px,
+        rgba(90, 72, 44, 0.035) 2px 3px
+      );
+    background-size:
+      220px 220px,
+      auto;
+    opacity: 0.1;
+    mix-blend-mode: multiply;
+  }
+
+  .paper-vignette {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      125% 100% at 50% 12%,
+      transparent 52%,
+      color-mix(in oklab, var(--color-paper-deep) 60%, transparent) 100%
+    );
+  }
+
+  /* THE READABILITY LAW — clean paper panel that floats above the illustration. */
+  .paper-panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 34%),
+      color-mix(in oklab, var(--color-paper-panel) 94%, white);
+    border: 1px solid var(--color-paper-edge);
+    border-radius: var(--radius-panel);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 22px 48px -24px rgba(58, 46, 26, 0.46),
+      0 4px 12px -6px rgba(58, 46, 26, 0.22);
+  }
+
+  /* A softer, edge-only variant for large reading passages. */
+  .paper-panel-soft {
+    background: color-mix(in oklab, var(--color-paper-panel) 88%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-paper-edge) 70%, transparent);
+    border-radius: var(--radius-panel);
+    box-shadow: 0 14px 34px -24px rgba(58, 46, 26, 0.35);
+    backdrop-filter: blur(2px);
+  }
+
+  /* Hand-lettered marginalia: map labels, signposts, coordinates. */
+  .hand {
+    font-family: var(--font-hand);
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+  }
+
+  /* Small-caps cartographic label. */
+  .map-eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.36em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-ink-faint);
+  }
+
+  /* Cards that lift with a weighted, directional shadow on hover. */
+  .card-hover {
+    transition:
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 34px 60px -28px rgba(58, 46, 26, 0.55),
+      0 8px 20px -10px rgba(58, 46, 26, 0.25);
+  }
+
+  /* An editorial drop-cap for the first letter of an intro paragraph. */
+  .lettrine::first-letter {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 3.4em;
+    line-height: 0.72;
+    float: left;
+    margin: 0.06em 0.09em 0 0;
+    color: var(--color-terracotta);
+  }
+
+  /* A faint ink hairline divider. */
+  .ink-rule {
+    height: 1px;
+    border: 0;
+    background: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in oklab, var(--color-ink-faint) 60%, transparent),
+      transparent
+    );
+  }
+
+  /* Self-drawing SVG stroke: set --len via JS/inline, then add this class. */
+  .ink-draw {
+    stroke-dasharray: var(--len, 1200);
+    stroke-dashoffset: var(--len, 1200);
+    animation: ink-draw-on 1.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  }
+}
+
+/* ---- keyframes ---- */
+@keyframes ink-draw-on {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes gentle-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(-0.6deg);
+  }
+}
+
+@keyframes glow-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate(5%, -3.5%) scale(1.09);
+    opacity: 1;
+  }
+}
+
+@keyframes soft-sway {
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(1.2deg);
+  }
+}
+
+@keyframes ink-bloom {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- the living world ---- */
+
+/* Seamless horizontal drift for a 200%-wide, 2-period wave band. */
+@keyframes wave-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* A whole sea layer breathing up and down. */
+@keyframes sea-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Clouds crossing the sky. */
+@keyframes cloud-cross {
+  from {
+    transform: translateX(-16vw);
+  }
+  to {
+    transform: translateX(118vw);
+  }
+}
+
+/* The paper boat riding the swell. */
+@keyframes boat-ride {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2.2deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(2.4deg);
+  }
+}
+
+/* A slow, weighted drift for birds / distant sails. */
+@keyframes drift-across {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(46vw, -12vh, 0);
+  }
+}
+
+/* An underline / route that inks itself left-to-right. */
+@keyframes underline-ink {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Lighthouse beam sweep. */
+@keyframes beam-sweep {
+  0%,
+  18% {
+    opacity: 0;
+    transform: rotate(-26deg);
+  }
+  38% {
+    opacity: 0.5;
+  }
+  58% {
+    opacity: 0;
+    transform: rotate(30deg);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(30deg);
+  }
+}
+
+@layer components {
+  /* GPU hint for continuously animated layers. */
+  .will-move {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  /* Ambient loops as utilities so JSX stays readable. */
+  .anim-bob {
+    animation: sea-bob 7s ease-in-out infinite;
+  }
+  .anim-boat {
+    animation: boat-ride 6s ease-in-out infinite;
+  }
+  .anim-sway {
+    animation: soft-sway 9s ease-in-out infinite;
+    transform-origin: 50% 50%;
+  }
+}
+
+/* ---- day / night environment (set via data-phase on <html>) ---- */
+:root {
+  --star-opacity: 0;
+}
+html,
+body {
+  transition: background-color 1.8s ease;
+}
+
+:root[data-phase="dawn"] {
+  --color-sun: #f6d9c0;
+  --color-sky-top: #f8ede2;
+  --color-sky-low: #f3e6d8;
+}
+:root[data-phase="dusk"] {
+  --color-sun: #f3c78a;
+  --color-sky-top: #f7e7cf;
+  --color-sky-low: #f0dabc;
+  --star-opacity: 0.4;
+}
+:root[data-phase="night"] {
+  --color-sun: #e0e7f3;
+  --color-sky-top: #ccd2e0;
+  --color-sky-low: #bfc5d6;
+  --color-sea-1: #ccd6da;
+  --color-sea-2: #aec4c7;
+  --color-sea-3: #8fb0b1;
+  --color-sea-4: #6d9799;
+  --color-paper: #eee8dc;
+  --color-paper-panel: #f6f1e7;
+  --color-paper-deep: #e5ddcc;
+  --star-opacity: 0.9;
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--star-opacity);
+  transition: opacity 1.6s ease;
+}
+.stars i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, white 75%, var(--color-sun));
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Reduced motion: the story must still be tellable, but nothing should move
+ * on its own. Journey components additionally switch to a static layout in JS. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   ELEVATION LAYER
+   --------------------------------------------------------------------------
+   Everything below refines surfaces that already exist rather than adding new
+   ones. It is appended last so it wins on equal specificity, and because the
+   whole site draws its panels from `.paper-panel`, raising the craft here
+   raises every chapter, card and plate at once.
+   ========================================================================== */
+
+@layer components {
+  /* ---- real paper -------------------------------------------------------
+     Three things separate printed paper from a cream rectangle: the cut edge
+     is never perfectly straight, the surface has fibre running through it, and
+     light darkens slightly where the sheet lifts away from what's behind it.  */
+  .paper-panel {
+    position: relative;
+    isolation: isolate;
+    background:
+      /* the sheet's own sheen, strongest at the top edge */
+      linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0) 32%),
+      /* two crossed fibre grains, barely visible but felt */
+      repeating-linear-gradient(
+        96deg,
+        rgba(150, 125, 80, 0.026) 0 1px,
+        transparent 1px 5px
+      ),
+      repeating-linear-gradient(
+        3deg,
+        rgba(150, 125, 80, 0.02) 0 1px,
+        transparent 1px 7px
+      ),
+      color-mix(in oklab, var(--color-paper-panel) 95%, white);
+    /* hand-cut: each corner a slightly different radius, on both axes */
+    border-radius: 15px 12px 16px 13px / 13px 16px 12px 15px;
+    border: 1px solid color-mix(in oklab, var(--color-paper-edge) 92%, transparent);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 1px 2px -1px rgba(58, 46, 26, 0.18),
+      0 10px 22px -14px rgba(58, 46, 26, 0.32),
+      0 26px 54px -28px rgba(58, 46, 26, 0.42);
+  }
+
+  /* The cut edge itself: a hairline of light on top, ink pooling at the foot. */
+  .paper-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -20px 28px -26px rgba(58, 46, 26, 0.55);
+  }
+
+  .paper-panel-soft {
+    border-radius: 14px 12px 15px 12px / 12px 15px 12px 14px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 40%),
+      color-mix(in oklab, var(--color-paper-panel) 88%, transparent);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.5) inset,
+      0 16px 36px -26px rgba(58, 46, 26, 0.38);
+  }
+
+  /* ---- lift -------------------------------------------------------------
+     The old hover jumped 5px and swapped a heavy shadow. This keeps the travel
+     small and lets the SHADOW do the work, which is how a real object lifting
+     off a desk actually reads.                                              */
+  .card-hover {
+    transition:
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 2px 4px -1px rgba(58, 46, 26, 0.2),
+      0 18px 34px -18px rgba(58, 46, 26, 0.4),
+      0 40px 70px -34px rgba(58, 46, 26, 0.5);
+  }
+
+  /* ---- pointer-reactive plates -----------------------------------------
+     `--rx/--ry` (tilt) and `--mx/--my` (light position) are written by the
+     Tilt component. With no JS they stay at their defaults and the plate is
+     simply a flat, correct card.                                            */
+  .tilt {
+    transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tilt[data-tracking="1"] {
+    transition: transform 0.12s ease-out;
+  }
+
+  /* A soft highlight that follows the cursor across the sheet. */
+  .sheen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* Behind the text, above the sheet. Body copy must never be washed out by
+       a decorative highlight — the readability law outranks the effect. */
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: soft-light;
+    background: radial-gradient(
+      460px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.75),
+      transparent 46%
+    );
+    transition: opacity 0.45s ease;
+  }
+  .sheen:hover::before {
+    opacity: 1;
+  }
+
+  /* ---- ink underline ----------------------------------------------------
+     Draws in from the left on hover, the way a nib would lay it down.       */
+  .ink-link {
+    position: relative;
+    text-decoration: none;
+  }
+  .ink-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1.5px;
+    border-radius: 2px;
+    background: currentColor;
+    opacity: 0.75;
+    transform: scaleX(var(--underline, 0));
+    transform-origin: left center;
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .ink-link:hover::after,
+  .ink-link:focus-visible::after {
+    --underline: 1;
+  }
+
+  /* ---- the title cartouche ---------------------------------------------
+     A chart's title block: a double rule, inset from the sheet's edge, with
+     the corners left open the way an engraver would.                        */
+  .cartouche {
+    position: relative;
+  }
+  .cartouche::before {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    pointer-events: none;
+    border: 1px solid color-mix(in oklab, var(--color-paper-edge) 85%, transparent);
+    border-radius: 8px 6px 9px 7px / 7px 9px 6px 8px;
+    /* Open corners: the rule fades out where two edges would meet. */
+    mask-image:
+      linear-gradient(to right, transparent 0 18px, black 34px calc(100% - 34px), transparent calc(100% - 18px)),
+      linear-gradient(to bottom, transparent 0 18px, black 34px calc(100% - 34px), transparent calc(100% - 18px));
+    mask-composite: add;
+    -webkit-mask-composite: source-over;
+  }
+  .cartouche::after {
+    content: "";
+    position: absolute;
+    inset: 19px;
+    pointer-events: none;
+    border: 1px solid color-mix(in oklab, var(--color-paper-edge) 55%, transparent);
+    border-radius: 6px 5px 7px 5px;
+    mask-image:
+      linear-gradient(to right, transparent 0 26px, black 44px calc(100% - 44px), transparent calc(100% - 26px)),
+      linear-gradient(to bottom, transparent 0 26px, black 44px calc(100% - 44px), transparent calc(100% - 26px));
+    mask-composite: add;
+    -webkit-mask-composite: source-over;
+  }
+
+  /* ---- numerals ---------------------------------------------------------
+     Dates, scores and CGPAs sit in columns; proportional digits make those
+     columns ragged.                                                          */
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---- small-caps label with rules on both sides ------------------------ */
+  .map-eyebrow {
+    /* Tracking this open needs the trailing space trimmed or the label reads
+       as off-centre against a centred rule. */
+    padding-left: 0.36em;
+  }
+}
+
+/* A gentler, warmer focus ring that matches the ink palette. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-teal-ink) 80%, transparent);
+    outline-offset: 3px;
+    border-radius: 5px;
+  }
+}
