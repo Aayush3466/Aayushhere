@@ -5,6 +5,22 @@ was chosen, why (in Aayush's own words where they exist), and what was rejected.
 
 ---
 
+## 2026-09-09 — Published to GitHub under Aayush's name alone
+
+**Chosen:** `github.com/Aayush3466/Aayushhere`, one initial commit authored and
+committed as Aayush3466 <ayushadhikari3466@gmail.com>, with no Co-Authored-By
+trailer and no Claude attribution anywhere in the history.
+
+**Why:** "push the code at this github with my github account not claude". The
+commit history of a portfolio is itself a professional artifact.
+
+**Rejected:** pushing before auditing. The repo is PUBLIC and `.env.local` holds
+the Supabase service-role key plus Resend and Groq keys. Confirmed the file is
+git-ignored AND that no key, project ref or password appears in any committed
+file, then un-ignored `.env.example` so the placeholder template still ships.
+
+---
+
 ## 2026-09-09 — Chapter copy lives in the database, not in `sections.ts`
 
 **Chosen:** a `site_sections` table; every eyebrow, title, subtitle and territory

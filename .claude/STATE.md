@@ -30,16 +30,18 @@ Nothing is in flight.
 
 ## Parked — wanted, but not now
 
-- **git init + first commit.** The project has NO version control. The
-  SessionStart hook's git half is inert until this exists.
-  _Unparks when:_ you want history, branches, or Vercel deploy-from-GitHub.
-- **Deploy to Vercel.** _Unparks when:_ content is filled in and the password
-  has been changed.
+- **Deploy to Vercel.** Import github.com/Aayush3466/Aayushhere, then add the
+  same env vars from .env.local in Project Settings and set NEXT_PUBLIC_SITE_URL
+  to the real domain. _Unparks when:_ content is filled in and the password has
+  been changed.
 
 ## Recently shipped
 
-No commit hashes — this project is not a git repository yet (see Parked).
-Shipped this session, all verified against the live database:
+Repo: github.com/Aayush3466/Aayushhere (public), branch `main`.
+
+- `61ae467` — everything below, in one initial commit. Verified before pushing
+  that `.env.local` is git-ignored and that no key, project ref or password
+  appears anywhere in the committed content.
 
 - Supabase schema: 11 tables, RLS, storage bucket (`supabase/schema.sql`)
 - `npm run setup` — provisions admin, seeds CV, verifies RLS on every run
