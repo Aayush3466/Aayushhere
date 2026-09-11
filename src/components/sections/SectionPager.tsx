@@ -8,7 +8,7 @@ import { clamp } from "@/lib/utils";
 import { useContent, useSections } from "@/lib/store/content-store";
 import { CHAPTER_ATTR, EntryCtx, SCROLLER_ATTR, type EntryEdge } from "./chapter-context";
 import { useChapterNav } from "./useChapterNav";
-import { ChartMinimap, ChartOverlay } from "@/components/map/ChartPanel";
+import { ChartOverlay } from "@/components/map/ChartPanel";
 import { TopNav } from "./TopNav";
 import { HomeSection } from "./HomeSection";
 import { EducationSection } from "./EducationSection";
@@ -280,6 +280,7 @@ export function SectionPager() {
         index={index}
         onGo={go}
         name={content.profile.name}
+        visited={visited}
         onOpenChart={() => setChartOpen(true)}
       />
       <EdgeNav index={index} onGo={go} />
@@ -317,12 +318,6 @@ export function SectionPager() {
         style={{ height: 0, background: `linear-gradient(180deg, ${accent}, transparent)` }}
       />
 
-      <ChartMinimap
-        index={index}
-        visited={visited}
-        sections={sections}
-        onOpen={() => setChartOpen(true)}
-      />
       <ChartOverlay
         open={chartOpen}
         onClose={() => setChartOpen(false)}

@@ -24,9 +24,9 @@ import { cn } from "@/lib/utils";
  * This is the payoff for every other design decision on the site: until now the
  * map was a STYLE — everything looked like a chart without there being one.
  *
- * One component serves both the corner minimap and the full-screen view, because
- * they must never disagree about the geography. `compact` drops the labels and
- * the flourishes that only read at size, and turns off interaction.
+ * Drawn once, at one size. It used to have a `compact` mode for a corner
+ * minimap; that minimap floated over the content and has been replaced by the
+ * route along the nav strip, so the scaling machinery went with it.
  *
  * Performance notes, since this site earned them the hard way:
  *   · nothing here animates on a loop. The route, the ship and the seals move on
@@ -39,7 +39,6 @@ export function VoyageChart({
   visited,
   sections,
   onPick,
-  compact = false,
   className,
 }: {
   index: number;
@@ -48,7 +47,6 @@ export function VoyageChart({
   /** Live chapter copy, so a rename in the Studio relabels the chart. */
   sections: SectionDef[];
   onPick?: (index: number) => void;
-  compact?: boolean;
   className?: string;
 }) {
   const routeRef = useRef<SVGPathElement>(null);
@@ -115,8 +113,7 @@ export function VoyageChart({
     <svg
       viewBox={`0 0 ${CHART_W} ${CHART_H}`}
       className={cn("block h-auto w-full", className)}
-      role={compact ? "img" : "group"}
-      aria-label={compact ? "Chart of the voyage" : undefined}
+      role="group"
     >
       {/* ---- the sheet ---- */}
       <rect
@@ -142,7 +139,7 @@ export function VoyageChart({
         d={COASTLINE_D}
         fill="none"
         stroke="var(--color-ink-soft)"
-        strokeWidth={compact ? 3.4 : 2}
+        strokeWidth={2}
         opacity="0.5"
       />
       {/* a second line just inside the shore — how an engraver shows a beach */}
@@ -150,26 +147,24 @@ export function VoyageChart({
         d={COASTLINE_D}
         fill="none"
         stroke="var(--color-ink-faint)"
-        strokeWidth={compact ? 1.6 : 0.9}
+        strokeWidth={0.9}
         opacity="0.4"
         transform="translate(0 9)"
       />
 
       {/* engraver's latitude hatching over the water — cheap, and it is the
           single detail that makes a blank area read as "sea" on old charts */}
-      <g stroke="var(--color-teal-ink)" strokeWidth={compact ? 1.8 : 0.9} opacity="0.28">
+      <g stroke="var(--color-teal-ink)" strokeWidth={0.9} opacity="0.28">
         {Array.from({ length: 7 }).map((_, i) => (
           <path key={i} d={`M${640 + i * 12},${600 - i * 6} H1240`} />
         ))}
       </g>
 
-      {!compact && (
-        <g stroke="var(--color-sage)" strokeWidth="1.5" fill="none" opacity="0.5">
-          {RIDGES.map((d, i) => (
-            <path key={i} d={d} strokeLinecap="round" strokeLinejoin="round" />
-          ))}
-        </g>
-      )}
+      <g stroke="var(--color-sage)" strokeWidth="1.5" fill="none" opacity="0.5">
+        {RIDGES.map((d, i) => (
+          <path key={i} d={d} strokeLinecap="round" strokeLinejoin="round" />
+        ))}
+      </g>
 
       {/* ---- the route ---- */}
       {/* The full course, drawn faintly: you can always see where the coast goes. */}
@@ -178,8 +173,8 @@ export function VoyageChart({
         d={ROUTE_D}
         fill="none"
         stroke="var(--color-ink-soft)"
-        strokeWidth={compact ? 3 : 1.8}
-        strokeDasharray={compact ? "6 9" : "2 10"}
+        strokeWidth={1.8}
+        strokeDasharray={"2 10"}
         strokeLinecap="round"
         opacity="0.55"
       />
@@ -189,7 +184,7 @@ export function VoyageChart({
           d={ROUTE_D}
           fill="none"
           stroke="var(--color-terracotta)"
-          strokeWidth={compact ? 4.5 : 2.6}
+          strokeWidth={2.6}
           strokeLinecap="round"
           style={{
             strokeDasharray: metrics.total,
@@ -215,19 +210,19 @@ export function VoyageChart({
                 transition: "opacity 0.6s ease",
               }}
             >
-              <PlaceGlyph glyph={place.glyph} accent={accent} compact={compact} />
+              <PlaceGlyph glyph={place.glyph} accent={accent} />
               {/* A seal is stamped only once you have actually arrived — and not
                   on the place you are standing in, which the ship already marks. */}
-              {seen && !here && <Seal accent={accent} compact={compact} />}
+              {seen && !here && <Seal accent={accent} />}
             </g>
 
-            {!compact && def && (
+            {def && (
               <Label place={place} label={def.nav} accent={accent} here={here} />
             )}
 
             {/* The hit target is generous and sits above everything — a 14px
                 glyph is not something anybody can reliably click. */}
-            {!compact && onPick && (
+            {onPick && (
               <circle
                 cx={place.x}
                 cy={place.y}
@@ -257,12 +252,11 @@ export function VoyageChart({
           transition: "transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
-        <Ship compact={compact} />
+        <Ship />
       </g>
 
       {/* ---- marginalia: the chart's own voice, not a claim about anyone ---- */}
-      {!compact && (
-        <>
+      <>
           <text
             x="1055"
             y="596"
@@ -288,8 +282,7 @@ export function VoyageChart({
           >
             the interior, unsurveyed
           </text>
-        </>
-      )}
+      </>
     </svg>
   );
 }
@@ -297,18 +290,8 @@ export function VoyageChart({
 /* -------------------------------------------------------------------------- */
 
 /** A hand-inked landmark per chapter, drawn at chart scale. */
-function PlaceGlyph({
-  glyph,
-  accent,
-  compact,
-}: {
-  glyph: Glyph;
-  accent: string;
-  compact: boolean;
-}) {
-  // The minimap is shown at roughly a sixth of the size, so its strokes have to
-  // be scaled up or they vanish into a grey smudge.
-  const w = compact ? 3.4 : 1.8;
+function PlaceGlyph({ glyph, accent }: { glyph: Glyph; accent: string }) {
+  const w = 1.8;
   const common = {
     fill: "none",
     stroke: accent,
@@ -316,10 +299,9 @@ function PlaceGlyph({
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
   };
-  const scale = compact ? 1.5 : 1;
 
   return (
-    <g transform={`scale(${scale})`}>
+    <g>
       {glyph === "harbour" && (
         <g {...common}>
           <path d="M-14 8 H14" />
@@ -390,10 +372,10 @@ function PlaceGlyph({
  * hand never lands square, and that single degree of wrongness is most of why it
  * reads as pressed rather than printed.
  */
-function Seal({ accent, compact }: { accent: string; compact: boolean }) {
-  const r = compact ? 10 : 7;
+function Seal({ accent }: { accent: string }) {
+  const r = 7;
   return (
-    <g transform={`translate(${compact ? 15 : 12} ${compact ? -15 : -12}) rotate(-9)`}>
+    <g transform="translate(12 -12) rotate(-9)">
       <path
         d="M0 -10 C5 -10 7 -7 9 -5 C11 -2 11 2 9 6 C7 9 4 10 0 10 C-4 10 -8 9 -10 6 C-12 2 -12 -2 -10 -5 C-8 -8 -5 -10 0 -10 Z"
         fill={accent}
@@ -406,7 +388,7 @@ function Seal({ accent, compact }: { accent: string; compact: boolean }) {
         r={r * 0.55}
         fill="none"
         stroke="var(--color-paper-panel)"
-        strokeWidth={compact ? 1.4 : 0.9}
+        strokeWidth={0.9}
         opacity="0.6"
       />
     </g>
@@ -414,8 +396,8 @@ function Seal({ accent, compact }: { accent: string; compact: boolean }) {
 }
 
 /** The paper boat, marking where you are now. */
-function Ship({ compact }: { compact: boolean }) {
-  const s = compact ? 1.7 : 1;
+function Ship() {
+  const s = 1;
   return (
     <g transform={`scale(${s})`}>
       {/* a soft wake so the boat sits ON the route rather than over it */}

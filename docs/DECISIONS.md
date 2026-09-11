@@ -5,6 +5,39 @@ was chosen, why (in Aayush's own words where they exist), and what was rejected.
 
 ---
 
+## 2026-09-11 — The nav is the minimap
+
+**Chosen:** the floating corner minimap is deleted. The nav strip draws the
+route instead — inked where you have been, dotted where you have not, with a wax
+seal under every chapter you actually stopped at, and the sliding accent
+underline marking where you are.
+
+**Why:** Aayush: _"the chart is colding with the conntes thats worst case for a
+portfolio i guess u can minimize the cahrt at first and if the user want it can
+clcik or think of some better fix"_. He was right, and hiding it on Home and
+below `lg` had not been enough — between about 1024px and 1400px the content
+column reaches the left edge, so the widget was still landing on someone's
+reading. That is the general case, not an edge case: ANY fixed widget over a
+scrolling column is eventually on top of something.
+
+**Rejected:** his first suggestion, collapsing it to a handle that expands on
+click. It would have made the collision smaller rather than removing it — a
+collapsed pill still overlaps at narrow widths, and an expanded one overlaps
+exactly as much as before. When the fix only scales the symptom, the structure is
+wrong.
+
+**The structural answer:** chrome belongs with chrome. The nav was already the
+place that named the current chapter; making it carry the route and the seals
+costs no content space at any width, behaves identically on a phone — which is
+also the honest answer to "every feature should be present on mobile", since the
+question the minimap answered is now answered on every device — and reads better
+than a thumbnail, because the chapter names ARE the places on the route.
+
+`ChartMinimap` and `VoyageChart`'s `compact` mode were deleted rather than left
+unused. The full chart, one tap from the nav, is unchanged.
+
+---
+
 ## 2026-09-11 — The loader is a floor, not a duration
 
 **Chosen:** the inking flourish shows for a 550ms minimum, leaves as soon as

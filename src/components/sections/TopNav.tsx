@@ -11,20 +11,39 @@ import { useSections } from "@/lib/store/content-store";
  * The voyage-nav: the name stays fixed on every chapter, live clocks show the
  * visitor's time and Aayush's Kathmandu time, chapters jump anywhere, and the
  * arrows sail between them. The active chapter carries a sliding ink underline.
+ *
+ * THE NAV IS ALSO THE CHART'S MINIMAP.
+ *
+ * There used to be a floating minimap pinned to the bottom-left corner, and it
+ * collided with the content — unavoidably, because any fixed widget sitting over
+ * a scrolling column will eventually be on top of something someone is reading.
+ * On a portfolio that is the worst possible bug.
+ *
+ * Shrinking it would only have made the collision smaller. The real fix is that
+ * chrome belongs with chrome: the route runs along the nav strip, inked where
+ * you have been and dotted where you have not, with a wax seal under every
+ * chapter you actually stopped at. Same two states as the full chart, so they
+ * can never disagree — and it costs zero content space at any width, works
+ * identically on a phone, and reads better besides, because the chapter names
+ * ARE the places on the route.
  */
 export function TopNav({
   index,
   onGo,
   name,
+  visited,
   onOpenChart,
 }: {
   index: number;
   onGo: (i: number) => void;
   name: string;
+  /** Chapters actually reached — the nav draws the route and seals from this. */
+  visited: ReadonlySet<number>;
   onOpenChart: () => void;
 }) {
   const sections = useSections();
   const count = sections.length;
+  const furthest = visited.size ? Math.max(...visited) : 0;
   const navRef = useRef<HTMLElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -86,29 +105,67 @@ export function TopNav({
           ref={navRef}
           className="flex flex-1 items-center gap-0.5 overflow-x-auto px-1 pl-2 [scrollbar-width:none] sm:gap-1 sm:pl-3"
         >
-          {sections.map((s, i) => (
-            <button
-              key={s.id}
-              ref={i === index ? activeRef : undefined}
-              type="button"
-              onClick={() => onGo(i)}
-              className={cn(
-                "pop relative shrink-0 rounded-md px-3 py-2 text-sm font-semibold sm:px-3.5",
-                i === index ? "" : "text-ink-faint hover:text-ink-soft",
-              )}
-              style={i === index ? { color: s.accent } : undefined}
-            >
-              <span className="font-display">{s.nav}</span>
-              {i === index && (
-                <motion.span
-                  layoutId="nav-underline"
-                  className="absolute inset-x-2 -bottom-0.5 h-[2.5px] rounded-full"
-                  style={{ background: s.accent }}
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          {sections.map((s, i) => {
+            const seen = visited.has(i);
+            const sailed = i <= furthest;
+            return (
+              <button
+                key={s.id}
+                ref={i === index ? activeRef : undefined}
+                type="button"
+                onClick={() => onGo(i)}
+                className={cn(
+                  "pop relative shrink-0 rounded-md px-3 pb-3 pt-1.5 text-sm font-semibold sm:px-3.5 sm:pb-3.5 sm:pt-2",
+                  i === index ? "" : "text-ink-faint hover:text-ink-soft",
+                )}
+                style={i === index ? { color: s.accent } : undefined}
+              >
+                <span className="font-display">{s.nav}</span>
+
+                {/* THE ROUTE, drawn along the nav itself.
+                    Inked where you have been, dotted where you have not —
+                    exactly the two states the full chart uses, so the strip and
+                    the chart never tell different stories. */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-[9px] h-[1.5px] rounded-full"
+                  style={
+                    sailed
+                      ? { background: "var(--color-terracotta)", opacity: 0.8 }
+                      : {
+                          color: "var(--color-ink-faint)",
+                          backgroundImage:
+                            "repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 6px)",
+                          opacity: 0.5,
+                        }
+                  }
                 />
-              )}
-            </button>
-          ))}
+
+                {/* a seal where you actually stopped */}
+                {seen && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute bottom-[6.5px] left-1/2 h-[6px] w-[6px] -translate-x-1/2 rotate-45 rounded-[1px]"
+                    style={{
+                      background: s.accent,
+                      // A ring in the paper colour so the seal punches cleanly
+                      // through the route line rather than sitting on top of it.
+                      boxShadow: "0 0 0 2px var(--color-paper-panel)",
+                    }}
+                  />
+                )}
+
+                {i === index && (
+                  <motion.span
+                    layoutId="nav-underline"
+                    className="absolute inset-x-2 bottom-0 h-[2.5px] rounded-full"
+                    style={{ background: s.accent }}
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="flex shrink-0 items-center gap-2.5">

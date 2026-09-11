@@ -88,11 +88,20 @@ Audited at 360x640, 360x740, 390x844, 820x1180, 1200x760, 1920x1080.
   content" to the pager, so on a short phone a scroll gesture paged away from
   heading chips the visitor had not seen yet. It now behaves like every other
   chapter: scroll what is there, then sail.
-- **The minimap is hidden on Home and below `lg`.** It was landing on top of the
-  heading chips — the page's primary call to action — and "where am I on this
-  coast" is a question nobody has before leaving the harbour. On phone and
-  tablet the nav strip already names and underlines the current chapter, and the
-  chart itself is one tap from the nav's chart button at every size.
+- **The floating minimap is GONE — the nav is the minimap now.** Hiding it on
+  Home and below `lg` was not enough: between roughly 1024px and 1400px the
+  content column reaches the left edge, so the widget still sat on top of what
+  someone was reading. Any fixed widget over a scrolling column eventually
+  does, and on a portfolio that is the worst bug there is.
+  Shrinking it would only have made the collision smaller, so the question moved
+  to where chrome belongs: **the nav strip draws the route** — inked terracotta
+  where you have been, dotted where you have not — **with a wax seal under every
+  chapter you actually stopped at**, plus the sliding accent underline for where
+  you are. Same two states as the full chart, so they can never disagree. Costs
+  zero content space at any width, works identically on a phone (which also
+  finally answers "every feature on mobile" properly), and reads better, because
+  the chapter names ARE the places on the route.
+  `ChartMinimap` and `VoyageChart`'s `compact` mode were deleted with it.
 - **The nav is fully opaque.** Once the backdrop blur was removed, the remaining
   5% transparency just let headings read through the strip as they scrolled
   under it.

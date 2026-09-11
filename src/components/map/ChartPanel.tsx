@@ -8,17 +8,20 @@ import { VoyageChart } from "./VoyageChart";
 /**
  * THE CHART, PRESENTED
  * --------------------
- * Two surfaces over one drawing: a corner minimap that is always there, and a
- * full-screen chart you open with `M`, the minimap, or the nav button.
+ * The full-screen chart, opened with `M` or the nav's chart button.
  *
- * The minimap is not decoration — it answers "where am I in this thing?", which
- * a horizontal site has to answer or it feels like being lost in a corridor. The
- * full chart then turns that answer into navigation.
+ * There was a corner minimap here too. It answered a real question — "where am
+ * I in this thing?", which a horizontal site has to answer or it feels like a
+ * corridor — but it answered it by floating over the content, and on a
+ * portfolio a widget parked on top of someone's reading is the worst bug there
+ * is. Shrinking it would only have made the collision smaller, so the question
+ * moved to where chrome belongs: the nav strip now draws the route and the
+ * seals (see `TopNav`). This file is just the chart itself.
  *
- * Both live inside the pager's root, which is `fixed inset-0` and NOT
+ * It lives inside the pager's root, which is `fixed inset-0` and NOT
  * transformed, so `absolute` here means the viewport. (The translated track is a
- * child of that root — putting these inside the track instead would position
- * them several screens off to the side, the same trap the reading rail fell into.)
+ * child of that root — rendering this inside the track instead would put it
+ * several screens off to the side, the trap the reading rail fell into.)
  */
 export function ChartOverlay({
   open,
@@ -122,64 +125,5 @@ export function ChartOverlay({
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-/**
- * The corner minimap. Small, quiet, and always answering the same question.
- *
- * Hidden on phones on purpose: at that size the chart becomes an unreadable
- * smudge, and the screen edges are already carrying the sound toggle and the
- * chat launcher. The nav's chart button is the way in on mobile.
- */
-export function ChartMinimap({
-  index,
-  visited,
-  sections,
-  onOpen,
-}: {
-  index: number;
-  visited: ReadonlySet<number>;
-  sections: SectionDef[];
-  onOpen: () => void;
-}) {
-  /*
-   * Not on the first chapter, and not below `lg`.
-   *
-   * Two reasons, and they are the same reason. On Home the bottom band already
-   * carries the heading chips, the scroll cue, the sound toggle and the chat —
-   * and the minimap was landing on top of the chips, which are the primary
-   * call to action on the page. And "where am I on this coast?" is a question
-   * nobody has before they have left the harbour.
-   *
-   * Below `lg` the answer comes from the nav strip, which already names the
-   * current chapter and underlines it; the chart itself stays one tap away from
-   * the nav's chart button on every size.
-   */
-  if (index === 0) return null;
-
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label="Open the chart"
-      title="The chart (M)"
-      className="lift group absolute bottom-[4.9rem] left-4 z-40 hidden w-[178px] overflow-hidden rounded-xl p-1.5 text-left lg:block"
-      style={{
-        background: "color-mix(in oklab, var(--color-paper-panel) 94%, transparent)",
-        border: "1px solid var(--color-paper-edge)",
-        boxShadow: "0 12px 30px -18px rgba(58,46,26,0.55)",
-      }}
-    >
-      <span className="block overflow-hidden rounded-lg">
-        <VoyageChart index={index} visited={visited} sections={sections} compact />
-      </span>
-      <span className="hand mt-1 flex items-baseline justify-between px-1 text-base leading-none text-ink-faint">
-        <span>the chart</span>
-        <span className="num opacity-70">
-          {visited.size}/{sections.length}
-        </span>
-      </span>
-    </button>
   );
 }
