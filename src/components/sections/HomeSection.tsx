@@ -4,6 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { SECTION_INDEX, type SectionId } from "@/lib/sections";
 import { useContent } from "@/lib/store/content-store";
+import { SCROLLER_ATTR } from "./chapter-context";
 import { useEnvironment } from "@/lib/store/environment";
 import { Sky } from "@/components/world/Sky";
 import { Stars } from "@/components/world/Stars";
@@ -108,13 +109,49 @@ export function HomeSection({ onGo, active = true }: { onGo: (index: number) => 
         <Lighthouse />
       </Parallax>
       <Sea />
-      <Parallax d={22}>
-        <PaperBoat style={{ top: "64vh", left: "62%" }} width={104} />
-      </Parallax>
+      {/* The boat now SAILS.
+          It used to sit at a fixed `left: 62%`, which put it behind the
+          cartouche on a wide screen and under the shore on a short one — a
+          paper boat parked in a corner of its own sea. It crosses the water on
+          a slow loop instead, high enough in the band to stay clear of the
+          beach at every viewport height, and the bob rides on top of the
+          crossing rather than instead of it. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 z-[5]"
+        style={{ top: "clamp(58vh, 60vh, 66vh)" }}
+      >
+        <div
+          className="will-move absolute left-0 w-[86px] sm:w-[112px] lg:w-[132px]"
+          style={{ animation: "boat-sail 54s linear infinite" }}
+        >
+          <PaperBoat />
+        </div>
+      </div>
       <Shore />
 
       {/* readable arrival */}
-      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-5">
+      {/* `pb` reserves the bottom band. The column centres its content, so with
+          the cartouche at phone height the last row of heading chips was landing
+          underneath the scroll cue and the sound toggle — content centred into
+          furniture that is pinned to the same edge. */}
+      {/* `pb` reserves the bottom furniture's space: the column centres its
+          content, and on a phone the last row of heading chips was landing
+          underneath the scroll cue and the sound toggle — content centred into
+          furniture pinned to the same edge.
+          
+          It also declares itself as this chapter's SCROLL COLUMN, which makes
+          Home behave like every other chapter: on a tall screen there is
+          nothing to scroll and the first push sails onward, and on a short
+          phone you scroll the hero into view first and only then sail. Without
+          this the pager treated Home as having no content, so a short screen
+          could hide the heading chips behind a gesture that paged away from
+          them. */}
+      <div
+        {...{ [SCROLLER_ATTR]: "" }}
+        className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-y-auto overscroll-contain px-4 pb-24 pt-[76px] sm:px-5 sm:pb-20 sm:pt-20"
+        style={{ touchAction: "pan-y" }}
+      >
         <motion.div
           className="flex w-full max-w-2xl flex-col items-center text-center"
           variants={wrap}
@@ -122,7 +159,7 @@ export function HomeSection({ onGo, active = true }: { onGo: (index: number) => 
           animate="show"
         >
           <motion.div variants={item} className="w-full">
-            <div className="paper-panel cartouche relative overflow-hidden px-8 py-7 sm:px-14 sm:py-9">
+            <div className="paper-panel cartouche relative overflow-hidden px-5 py-6 [@media(max-height:700px)]:py-4 sm:px-14 sm:py-9">
               {/* The chart's own compass, printed into the sheet rather than on it. */}
               <div
                 className="pointer-events-none absolute inset-0 grid place-items-center opacity-[0.05]"
@@ -145,7 +182,10 @@ export function HomeSection({ onGo, active = true }: { onGo: (index: number) => 
                 <WaxSeal initials="AA" size={68} />
               </div>
               <div className="relative flex flex-col items-center gap-3">
-                <InkAvatar size={104} />
+                {/* Smaller on a phone, where vertical room is the scarce thing. */}
+                <div className="w-[78px] [@media(max-height:700px)]:w-[56px] sm:w-[104px]">
+                  <InkAvatar size={104} />
+                </div>
                 <p className="map-eyebrow">An illustrated chart of</p>
                 <h1 className="text-[clamp(2.4rem,7vw,4.4rem)] leading-[1.02]">
                   <TitleReveal text={profile.name} delay={reduce ? 0 : 2.0} />
@@ -157,7 +197,10 @@ export function HomeSection({ onGo, active = true }: { onGo: (index: number) => 
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.9, delay: reduce ? 0 : 2.9, ease: [0.65, 0, 0.35, 1] }}
                 />
-                <p className="hand text-xl sm:text-2xl" style={{ color: "var(--color-terracotta)" }}>
+                <p
+                  className="hand text-xl [@media(max-height:700px)]:text-lg sm:text-2xl"
+                  style={{ color: "var(--color-terracotta)" }}
+                >
                   {profile.tagline}
                 </p>
                 <Flourish accent="var(--color-ochre)" className="mt-1 opacity-70" />
@@ -165,15 +208,17 @@ export function HomeSection({ onGo, active = true }: { onGo: (index: number) => 
             </div>
           </motion.div>
 
-          <motion.div variants={item} className="mt-6">
-            <p className="hand mb-3 text-xl text-ink-soft">set your heading —</p>
-            <div className="flex flex-wrap justify-center gap-2.5">
+          <motion.div variants={item} className="mt-6 [@media(max-height:700px)]:mt-3">
+            <p className="hand mb-2.5 text-lg text-ink-soft [@media(max-height:700px)]:mb-1.5 sm:mb-3 sm:text-xl">
+              set your heading —
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5">
               {CHIPS.map((c) => (
                 <Magnetic key={c.id} strength={0.5}>
                   <button
                     type="button"
                     onClick={() => onGo(SECTION_INDEX[c.id])}
-                    className="paper-panel card-hover px-4 py-2 font-display text-sm font-semibold text-ink"
+                    className="paper-panel pop px-3.5 py-2 font-display text-[0.8rem] font-semibold text-ink sm:px-5 sm:py-2.5 sm:text-base"
                   >
                     {c.label}
                   </button>

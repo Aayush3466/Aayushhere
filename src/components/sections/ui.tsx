@@ -52,7 +52,7 @@ export function TechChips({ items, accent }: { items: string[]; accent: string }
       {items.map((t) => (
         <li
           key={t}
-          className="rounded-[var(--radius-pill)] px-2.5 py-0.5 text-xs font-medium transition-colors"
+          className="pop pop-sm cursor-default rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold"
           style={{
             color: accent,
             backgroundColor: `color-mix(in oklab, ${accent} 12%, var(--color-paper-panel))`,
@@ -77,11 +77,11 @@ export function LinkList({ links, accent }: { links: LinkRef[]; accent: string }
           href={l.url}
           target="_blank"
           rel="noreferrer"
-          className="ink-link group inline-flex items-center gap-1 text-sm font-medium"
+          className="ink-link group inline-flex items-center gap-1 text-sm font-semibold"
           style={{ color: accent }}
         >
           {l.label}
-          <span className="transition-transform duration-300 group-hover:translate-x-0.5">
+          <span className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5">
             ↗
           </span>
         </a>
@@ -94,7 +94,7 @@ export function LinkList({ links, accent }: { links: LinkRef[]; accent: string }
 export function Pill({ children, accent }: { children: ReactNode; accent: string }) {
   return (
     <span
-      className="num inline-block rounded-[var(--radius-pill)] px-3 py-0.5 text-xs font-semibold"
+      className="num pop pop-sm inline-block cursor-default rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold"
       style={{
         color: accent,
         backgroundColor: `color-mix(in oklab, ${accent} 14%, var(--color-paper-panel))`,

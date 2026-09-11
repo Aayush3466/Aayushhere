@@ -5,25 +5,32 @@
 export function PaperBoat({
   className,
   style,
-  width = 118,
 }: {
   className?: string;
   style?: React.CSSProperties;
-  width?: number;
 }) {
   return (
-    <div aria-hidden className={className} style={{ position: "absolute", ...style }}>
-      {/* the bob/rotate lives on an inner wrapper so callers can position freely */}
+    // Fluid, and it no longer forces `position: absolute` on itself. It used to
+    // take a pixel width and pin its own position, which meant the caller could
+    // not make it smaller on a phone or let it sail — the boat owned where it
+    // was, so it could only ever be parked.
+    <div aria-hidden className={className} style={style}>
+      {/* the bob/rotate lives on an inner wrapper so it composes with the sail */}
       <div className="anim-boat will-move">
-        <svg viewBox="0 0 120 86" width={width} height={width * 0.72} className="overflow-visible">
+        <svg
+          viewBox="0 0 120 86"
+          width="100%"
+          className="h-auto overflow-visible"
+          preserveAspectRatio="xMidYMid meet"
+        >
           {/* faint reflection on the water */}
-          <ellipse cx="60" cy="80" rx="46" ry="4" fill="var(--color-ink)" opacity="0.08" />
+          <ellipse cx="60" cy="80" rx="48" ry="4.5" fill="var(--color-ink)" opacity="0.13" />
           {/* hull */}
           <path
             d="M10 52 L110 52 L92 72 Q60 78 28 72 Z"
             fill="var(--color-paper-panel)"
             stroke="var(--color-ink)"
-            strokeWidth="1.4"
+            strokeWidth="1.7"
             strokeLinejoin="round"
           />
           {/* folded sail / hat */}
@@ -31,7 +38,7 @@ export function PaperBoat({
             d="M18 52 L60 14 L102 52 Z"
             fill="color-mix(in oklab, var(--color-paper-panel) 92%, white)"
             stroke="var(--color-ink)"
-            strokeWidth="1.4"
+            strokeWidth="1.7"
             strokeLinejoin="round"
           />
           {/* centre fold */}

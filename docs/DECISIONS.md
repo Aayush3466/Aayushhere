@@ -5,6 +5,106 @@ was chosen, why (in Aayush's own words where they exist), and what was rejected.
 
 ---
 
+## 2026-09-11 — The loader is a floor, not a duration
+
+**Chosen:** the inking flourish shows for a 550ms minimum, leaves as soon as
+`document.fonts` settles, and leaves regardless at 1.3s. Typically ~600-800ms,
+down from a flat 2.1 seconds.
+
+**Why:** Aayush: _"i dont want my webiste lagging or slow or user takes time to
+even laod at fisst place hen lookign at very first time as that is turn off"_.
+He is right, and the culprit was ours: the page underneath is statically
+prerendered and paints in about 200ms, and we were sitting on top of it for two
+seconds to play an animation. A flourish that delays the thing it introduces is
+not craft, it is a toll.
+
+**Rejected:** removing the loader. It is genuinely part of the identity, and
+650ms of it reads as intent where 2100ms reads as a slow site.
+
+---
+
+## 2026-09-11 — Trimming the fonts halved the deploy and changed nothing for visitors
+
+**Chosen:** Fraunces without italic and without the WONK axis it had pinned to
+0; Spectral at 400/600 plus one italic instead of eight faces; Caveat at one
+weight. 1.3 MB across 50 files became 628 KB across 27.
+
+**Why it is recorded honestly:** a visitor's font download did not move — still
+250 KB over six files. The browser was already fetching only the subsets it
+needed, so everything removed was weight nobody was carrying. It is still worth
+having done (smaller builds, no dead faces, no confusion about what is in use)
+but it is NOT the first-load win the numbers suggest, and the next person to
+look at this should not go hunting for a speedup that was never there.
+
+**Kept on purpose:** Fraunces' SOFT axis, measured at 52 KB. The heading face
+carries the site's entire identity, and with `display: swap` fonts gate nothing
+— text paints in the fallback immediately and swaps when ready. Spending those
+bytes on the first thing anyone looks at, in a place where they cost no latency,
+is the right call.
+
+---
+
+## 2026-09-11 — Aggressive hovers, on the compositor, behind a hover query
+
+**Chosen:** one hover system — `.pop` (scale 1.14) for small controls, `.lift`
+(scale 1.028, -7px) for cards, `.tip-l`/`.tip-r` adding a degree of rotation to
+drawn plates — all on a back-out curve, all transform-and-opacity only, all
+inside `@media (hover: hover) and (pointer: fine)`.
+
+**Why:** Aayush wanted hovers that "aggressively get bigger" and feel "very
+lively". Three things make that safe here. Transform and opacity are the only
+properties the compositor can animate without repainting, so a big hover costs
+the same as a small one. The back-out curve is what actually creates the feeling
+— overshooting and settling reads as weight arriving, which is why 1.14 with the
+right easing feels alive where 1.3 with a linear ease feels cheap. And the hover
+query matters more than either: a touch device that matches `:hover` stays stuck
+in the hovered state after a tap, which is the most common way a lively desktop
+site turns into a broken phone one. Touch gets `:active` presses instead.
+
+**Verified:** the idle animation count on a content chapter is unchanged, with
+zero pinned `will-change` layers. The system costs nothing when nobody hovers.
+
+---
+
+## 2026-09-11 — The boat sails, and no longer owns where it is
+
+**Chosen:** `PaperBoat` takes no width and forces no position; Home crosses it
+over the water on a 54s loop with the existing bob riding on top.
+
+**Why:** Aayush: _"the paper boat is hiding behind can u make it always moving
+aroudn the watre"_. It was pinned at `left: 62%` with a pixel width, so it sat
+behind the cartouche on a wide screen and under the shore on a short one — and
+because the component owned its own position and size, the caller could not move
+it, shrink it for a phone, or let it travel. A component that decides where it
+lives can only ever be parked.
+
+---
+
+## 2026-09-11 — Phone layout is a HEIGHT problem, not a width problem
+
+**Chosen:** Home's arrival column reserves the bottom furniture's space, and the
+avatar, cartouche padding, tagline and chip sizes respond to
+`@media (max-height: 700px)` as well as to width. Home also registers itself as
+a chapter scroll column. The minimap is hidden on Home and below `lg`.
+
+**Why:** at 360x640 the hero overflowed by 45px and the last row of heading
+chips — the page's primary call to action — sat underneath the scroll cue and
+the sound toggle. Width breakpoints could not fix it, because a 360x640 and a
+360x900 phone are the same width and need completely different vertical budgets.
+
+Registering Home as a scroll column fixed something worse: it used to report "no
+content" to the pager, so on a short phone a scroll gesture paged AWAY from
+chips the visitor had never seen. It now behaves like every other chapter —
+scroll what is there, then sail.
+
+And the minimap was the lesson about translating a feature rather than shrinking
+it. Aayush wanted every feature on mobile; a minimap at phone size is an
+illegible smudge landing on top of the CTA. The nav strip already names and
+underlines the current chapter, and the chart is one tap away at every size — so
+the ANSWER is present on mobile even though that particular widget is not.
+
+---
+
 ## 2026-09-11 — The chart is a real chart
 
 **Chosen:** a drawn coastline with all eight chapters on it — full-screen via

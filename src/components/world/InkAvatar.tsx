@@ -10,9 +10,9 @@ export function InkAvatar({ size = 120, className }: { size?: number; className?
   return (
     <svg
       viewBox="0 0 200 240"
-      width={size}
-      height={(size * 240) / 200}
-      className={cn("overflow-visible", className)}
+      width="100%"
+      style={{ maxWidth: size }}
+      className={cn("h-auto overflow-visible", className)}
       role="img"
       aria-label="Illustrated portrait of Aayush Adhikari"
     >

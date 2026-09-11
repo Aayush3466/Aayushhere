@@ -2,7 +2,108 @@
 
 Snapshot, not a log. Rewritten in place by `/handoff`. Last updated: 2026-09-09.
 
-## The Chart + the craft pass — DONE, verified, and pushed
+## Hovers, the boat, first-load speed, every screen — DONE and pushed
+
+### First load — what actually moved, and what didn't
+
+Measured on a production build, real transfer, before and after:
+
+| | before | after |
+|---|---|---|
+| fonts on disk / in deploy | 1.3 MB, 50 files | **628 KB, 27 files** |
+| fonts a VISITOR downloads | 250 KB, 6 files | 250 KB, 6 files |
+| JS | 225 KB | 225 KB |
+| CSS | 12 KB | 12 KB |
+| HTML | 19 KB | 17 KB |
+| first contentful paint | ~244 ms | ~204 ms |
+
+**Be honest about this:** halving the font declaration halved the DEPLOY, but a
+visitor's font bytes did not move — the browser was already fetching only the
+six subsets it needed, and everything removed was never being fetched. Worth
+doing (smaller builds, fewer files, no dead faces) but it is not the first-load
+win it looks like.
+
+**The actual first-load win was the loader.** It held the site behind a flourish
+for a flat 2.1 seconds on every first visit. It is now a FLOOR, not a duration:
+550ms minimum so it does not flash, then it leaves the moment `document.fonts`
+settles, with a 1.3s ceiling so a slow network can never hold the map hostage.
+Typically ~600-800ms. That is roughly a third of what it was, and it is the only
+thing on the page that was ever making a visitor wait on purpose.
+
+Also: `GamesSection` (typing engine, word corpus, code snippets, leaderboard
+store) is now `next/dynamic` — WITHOUT `ssr: false`, so the markup still
+server-renders for crawlers — and fetches when the visitor gets within one
+chapter of it.
+
+Fonts kept deliberately: Fraunces' SOFT axis costs 52 KB and was measured, but
+the heading face carries the site's whole identity and `display: swap` means
+fonts never block first paint at all — text renders in the fallback immediately
+and swaps. Spending 52 KB on the thing every visitor looks at first, in bytes
+that gate nothing, is the right trade.
+
+### Aggressive hovers
+
+One system in `globals.css`, three rules that make "aggressive" possible without
+giving the performance work back:
+
+1. **Transform and opacity only.** A hover that animates box-shadow, width or
+   `top` repaints every frame of every hover.
+2. **A back-out curve** (`--ease-back`, overshoots then settles). This is why a
+   1.14 scale reads as weight arriving rather than as a cheap zoom.
+3. **Behind `@media (hover: hover) and (pointer: fine)`.** A touch device that
+   matches `:hover` gets STUCK in the hovered state after a tap — the single
+   most common way a lively desktop site becomes a broken phone one. Touch gets
+   `:active` presses instead.
+
+`.pop` (scale 1.14) on nav chapters, the heading chips, pills, tech chips, the
+chart button, nav arrows, edge arrows, social icons, the sound toggle, close
+buttons, game tabs. `.lift` / `.card-hover` (scale 1.028, -7px, deeper shadow)
+on every card. `.tip-l` / `.tip-r` add a degree of rotation to gallery plates,
+because a drawn object should turn as it lifts or it reads as software. Touch
+targets went 36px -> 40px and 44px -> 48px in the same pass.
+
+Verified: idle animation count on a content chapter is unchanged at 3, with 0
+pinned `will-change` layers — the hover system costs nothing when nobody hovers.
+
+### The boat
+
+It was parked at a fixed `left: 62%`, which put it behind the cartouche on a
+wide screen and under the shore on a short one. `PaperBoat` no longer owns its
+own size or position (it took a pixel width and forced `position: absolute`), so
+it now sails: a 54s crossing on an outer wrapper with the existing bob riding on
+top, in a band placed to clear the beach at every viewport height, sized fluidly
+from 86px on a phone to 132px on a laptop.
+
+### Every screen size
+
+Audited at 360x640, 360x740, 390x844, 820x1180, 1200x760, 1920x1080.
+
+- **Home fits a 360x640 phone** — it overflowed by 45px and the last row of
+  heading chips sat under the scroll cue. The column now reserves the bottom
+  furniture's space, and the avatar, cartouche padding, tagline and chip sizes
+  all respond to VIEWPORT HEIGHT (`[@media(max-height:700px)]`), because a
+  360x640 and a 360x900 phone need different vertical budgets at the same width
+  breakpoint. Overflow is now 2px.
+- **Home is registered as a chapter scroll column.** It previously reported "no
+  content" to the pager, so on a short phone a scroll gesture paged away from
+  heading chips the visitor had not seen yet. It now behaves like every other
+  chapter: scroll what is there, then sail.
+- **The minimap is hidden on Home and below `lg`.** It was landing on top of the
+  heading chips — the page's primary call to action — and "where am I on this
+  coast" is a question nobody has before leaving the harbour. On phone and
+  tablet the nav strip already names and underlines the current chapter, and the
+  chart itself is one tap from the nav's chart button at every size.
+- **The nav is fully opaque.** Once the backdrop blur was removed, the remaining
+  5% transparency just let headings read through the strip as they scrolled
+  under it.
+- Big screens hold: content stays capped at `max-w-5xl` and centred.
+
+### Regression — green
+
+Full 8-chapter scroll chain, never mid-chapter; two back-to-back trackpad flicks
+still give two chapters; idle animation count unchanged.
+
+## The Chart + the craft pass — DONE, verified, pushed (f02ec15)
 
 ### The Chart
 

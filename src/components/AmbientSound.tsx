@@ -72,7 +72,7 @@ export function AmbientSound() {
       type="button"
       onClick={toggle}
       aria-label={on ? "Mute ambience" : "Play ambience"}
-      className="fixed bottom-4 left-4 z-[60] grid h-11 w-11 place-items-center rounded-full transition-transform hover:-translate-y-0.5"
+      className="pop fixed bottom-4 left-4 z-[60] grid h-12 w-12 place-items-center rounded-full"
       style={{
         background: "var(--color-paper-panel)",
         border: "1px solid var(--color-paper-edge)",

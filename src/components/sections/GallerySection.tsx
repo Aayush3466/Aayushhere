@@ -3,6 +3,7 @@
 import { useContent, useSectionDef } from "@/lib/store/content-store";
 import { SectionShell } from "./SectionShell";
 import { ChapterBackdrop } from "./ChapterBackdrop";
+import { cn } from "@/lib/utils";
 
 const TILT = [-2.5, 1.8, -1.2, 2.4, -1.8, 1.2];
 
@@ -62,7 +63,7 @@ export function GallerySection({ active }: { active: boolean }) {
           {sorted.map((g, i) => (
             <figure
               key={g.id}
-              className="paper-panel relative break-inside-avoid p-2"
+              className={cn("paper-panel lift relative break-inside-avoid p-2", i % 2 ? "tip-r" : "tip-l")}
               style={{ transform: `rotate(${TILT[i % TILT.length]}deg)` }}
             >
               {/* The chapter is called the sketch wall and the copy says

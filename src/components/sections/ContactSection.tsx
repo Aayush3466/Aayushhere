@@ -127,7 +127,7 @@ export function ContactSection({ active }: { active: boolean }) {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={s.platform}
-                  className="grid h-11 w-11 place-items-center rounded-full border transition-transform hover:-translate-y-0.5"
+                  className="pop grid h-12 w-12 place-items-center rounded-full border"
                   style={{
                     color: DEF.accent,
                     borderColor: `color-mix(in oklab, ${DEF.accent} 40%, transparent)`,
@@ -144,7 +144,7 @@ export function ContactSection({ active }: { active: boolean }) {
             {profile.cvFileUrl ? (
               <a
                 href={profile.cvFileUrl}
-                className="inline-flex items-center gap-2 rounded-[var(--radius-pill)] px-5 py-2.5 font-display font-semibold text-[color:var(--color-paper-panel)]"
+                className="pop inline-flex items-center gap-2 rounded-[var(--radius-pill)] px-6 py-3 font-display font-semibold text-[color:var(--color-paper-panel)]"
                 style={{ background: DEF.accent }}
               >
                 Download CV ↓

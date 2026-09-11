@@ -267,11 +267,11 @@ function Bubble({ msg }: { msg: Msg }) {
           {msg.items.map((it, i) => (
             <li key={i} className="border-l-2 pl-2.5" style={{ borderColor: "var(--color-ochre)" }}>
               {it.url ? (
-                <a href={it.url} target="_blank" rel="noreferrer" className="block font-medium leading-snug underline decoration-1 underline-offset-2" style={{ color: "var(--color-teal-ink)" }}>
+                <a href={it.url} target="_blank" rel="noreferrer" className="block font-semibold leading-snug underline decoration-1 underline-offset-2" style={{ color: "var(--color-teal-ink)" }}>
                   {it.title} ↗
                 </a>
               ) : (
-                <span className="block font-medium leading-snug">{it.title}</span>
+                <span className="block font-semibold leading-snug">{it.title}</span>
               )}
               {it.meta && <span className="mt-0.5 block text-xs text-ink-faint">{it.meta}</span>}
             </li>

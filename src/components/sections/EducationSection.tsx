@@ -106,6 +106,7 @@ export function EducationSection({ active }: { active: boolean }) {
                 <Disclosure
                   plate
                   accent={DEF.accent}
+                  className="card-hover"
                   text={e.note}
                   expandable={hasHiddenDetail(e)}
                   title={e.degree}

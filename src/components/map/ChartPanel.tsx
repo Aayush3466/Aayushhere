@@ -86,7 +86,7 @@ export function ChartOverlay({
                 type="button"
                 onClick={onClose}
                 aria-label="Close the chart"
-                className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[color:var(--color-paper-edge)] text-ink-soft transition-colors hover:text-ink"
+                className="pop ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[color:var(--color-paper-edge)] text-ink-soft hover:text-ink"
                 style={{ background: "var(--color-paper-panel)" }}
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -143,13 +143,28 @@ export function ChartMinimap({
   sections: SectionDef[];
   onOpen: () => void;
 }) {
+  /*
+   * Not on the first chapter, and not below `lg`.
+   *
+   * Two reasons, and they are the same reason. On Home the bottom band already
+   * carries the heading chips, the scroll cue, the sound toggle and the chat —
+   * and the minimap was landing on top of the chips, which are the primary
+   * call to action on the page. And "where am I on this coast?" is a question
+   * nobody has before they have left the harbour.
+   *
+   * Below `lg` the answer comes from the nav strip, which already names the
+   * current chapter and underlines it; the chart itself stays one tap away from
+   * the nav's chart button on every size.
+   */
+  if (index === 0) return null;
+
   return (
     <button
       type="button"
       onClick={onOpen}
       aria-label="Open the chart"
       title="The chart (M)"
-      className="group absolute bottom-[4.6rem] left-4 z-40 hidden w-[178px] overflow-hidden rounded-xl p-1.5 text-left transition-transform hover:-translate-y-0.5 sm:block"
+      className="lift group absolute bottom-[4.9rem] left-4 z-40 hidden w-[178px] overflow-hidden rounded-xl p-1.5 text-left lg:block"
       style={{
         background: "color-mix(in oklab, var(--color-paper-panel) 94%, transparent)",
         border: "1px solid var(--color-paper-edge)",

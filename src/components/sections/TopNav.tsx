@@ -52,7 +52,10 @@ export function TopNav({
           // the whole strip — the largest fixed cost on the site, and worst
           // exactly where it hurts most (phones). A near-opaque paper strip
           // reads the same against this palette and costs nothing.
-          background: "color-mix(in oklab, var(--color-paper-panel) 95%, transparent)",
+          // Fully opaque. It is a fixed chrome bar and content scrolls beneath
+          // it; once the backdrop blur was removed, any transparency just let
+          // headings read through the strip as they passed under.
+          background: "var(--color-paper-panel)",
           border: "1px solid color-mix(in oklab, var(--color-paper-edge) 92%, transparent)",
           boxShadow:
             "0 1px 0 rgba(255,255,255,0.6) inset, 0 16px 44px -24px rgba(58,46,26,0.55)",
@@ -61,7 +64,7 @@ export function TopNav({
         <button
           type="button"
           onClick={() => onGo(0)}
-          className="flex shrink-0 items-center gap-2"
+          className="pop flex shrink-0 items-center gap-2"
           aria-label="Home"
         >
           {/* -18deg at the first chapter through +18deg at the last: the needle
@@ -90,7 +93,7 @@ export function TopNav({
               type="button"
               onClick={() => onGo(i)}
               className={cn(
-                "relative shrink-0 rounded-md px-2.5 py-1.5 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 sm:px-3",
+                "pop relative shrink-0 rounded-md px-3 py-2 text-sm font-semibold sm:px-3.5",
                 i === index ? "" : "text-ink-faint hover:text-ink-soft",
               )}
               style={i === index ? { color: s.accent } : undefined}
@@ -116,7 +119,7 @@ export function TopNav({
             onClick={onOpenChart}
             aria-label="Open the chart"
             title="The chart (M)"
-            className="grid h-9 w-9 place-items-center rounded-full border border-[color:var(--color-paper-edge)] bg-[color:var(--color-paper-panel)] text-ink-soft transition-all hover:-translate-y-0.5 hover:text-ink"
+            className="pop grid h-10 w-10 place-items-center rounded-full border border-[color:var(--color-paper-edge)] bg-[color:var(--color-paper-panel)] text-ink-soft hover:text-ink"
           >
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z" />
@@ -166,7 +169,7 @@ function ArrowBtn({
       onClick={onClick}
       disabled={disabled}
       aria-label={dir === "next" ? "Next chapter" : "Previous chapter"}
-      className="grid h-9 w-9 place-items-center rounded-full border border-[color:var(--color-paper-edge)] bg-[color:var(--color-paper-panel)] text-ink transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0"
+      className="pop grid h-10 w-10 place-items-center rounded-full border border-[color:var(--color-paper-edge)] bg-[color:var(--color-paper-panel)] text-ink disabled:cursor-not-allowed disabled:opacity-35"
     >
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         {dir === "next" ? <path d="M9 6l6 6-6 6" /> : <path d="M15 6l-6 6 6 6" />}

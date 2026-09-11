@@ -296,7 +296,7 @@ export function Sheet({
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="-mr-1 -mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[color:var(--color-paper-edge)] text-ink-soft transition-colors hover:text-ink"
+                className="pop -mr-1 -mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[color:var(--color-paper-edge)] text-ink-soft hover:text-ink"
                 style={{ background: "var(--color-paper-panel)" }}
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">

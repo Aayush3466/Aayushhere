@@ -39,8 +39,40 @@ export function InkingLoader() {
       return;
     }
 
-    const t = setTimeout(() => setVisible(false), reduced ? 400 : 2100);
-    return () => clearTimeout(t);
+    /*
+     * This used to hold the site behind a flourish for a flat 2.1 seconds, and
+     * that is the single worst thing a portfolio can do to a first-time
+     * visitor — the one moment where a wait reads as "slow site" rather than as
+     * craft. The page underneath is statically prerendered and needs none of it.
+     *
+     * So the timer is now a FLOOR, not a duration: show it long enough not to
+     * flash (550ms), then leave as soon as the fonts have actually settled, and
+     * leave regardless after 1.3s so a slow network can never hold the map
+     * hostage. In practice that is roughly a third of what it was.
+     */
+    if (reduced) {
+      const t = setTimeout(() => setVisible(false), 250);
+      return () => clearTimeout(t);
+    }
+
+    const FLOOR_MS = 550;
+    const CEILING_MS = 1300;
+    let done = false;
+    const leave = () => {
+      if (done) return;
+      done = true;
+      setVisible(false);
+    };
+
+    const floor = new Promise<void>((r) => setTimeout(r, FLOOR_MS));
+    const ready = document.fonts?.ready ?? Promise.resolve();
+    void Promise.all([floor, ready]).then(leave);
+    const ceiling = setTimeout(leave, CEILING_MS);
+
+    return () => {
+      done = true;
+      clearTimeout(ceiling);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

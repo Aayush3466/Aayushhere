@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { animate, motion, useMotionValue } from "framer-motion";
 import { SECTIONS, type SectionId } from "@/lib/sections";
 import { clamp } from "@/lib/utils";
@@ -15,7 +16,18 @@ import { ResearchSection } from "./ResearchSection";
 import { ProjectsSection } from "./ProjectsSection";
 import { GallerySection } from "./GallerySection";
 import { ExperienceSection } from "./ExperienceSection";
-import { GamesSection } from "./GamesSection";
+/**
+ * The game room carries a typing engine, a word corpus, code snippets and a
+ * leaderboard store, none of which the first screen needs — and being a static
+ * import put all of it in the initial bundle. Split out, it fetches when the
+ * visitor gets within one chapter of it, which is long before they can see it.
+ *
+ * Deliberately WITHOUT `ssr: false`: the markup still server-renders, so the
+ * chapter stays in the HTML for crawlers.
+ */
+const GamesSection = dynamic(() =>
+  import("./GamesSection").then((m) => ({ default: m.GamesSection })),
+);
 import { ContactSection } from "./ContactSection";
 
 /**
@@ -436,7 +448,7 @@ function EdgeBtn({
       onClick={onClick}
       animate={pulse ? { x: dir === "next" ? [0, 7, 0] : [0, -7, 0] } : undefined}
       transition={pulse ? { duration: 1.7, repeat: Infinity, ease: "easeInOut" } : undefined}
-      className="pointer-events-auto flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-2.5 shadow-[0_10px_30px_-16px_rgba(58,46,26,0.6)] transition-transform hover:scale-[1.05]"
+      className="pop pointer-events-auto flex items-center gap-1.5 rounded-[var(--radius-pill)] px-4 py-3 shadow-[0_10px_30px_-16px_rgba(58,46,26,0.6)]"
       style={{
         background: "color-mix(in oklab, var(--color-paper-panel) 94%, transparent)",
         border: "1px solid var(--color-paper-edge)",

@@ -165,7 +165,7 @@ function Tab({ label, on, onClick, accent }: { label: string; on: boolean; onCli
     <button
       type="button"
       onClick={onClick}
-      className="rounded-[var(--radius-pill)] px-4 py-1.5 text-sm font-semibold transition-colors"
+      className="pop rounded-[var(--radius-pill)] px-5 py-2 text-sm font-semibold"
       style={{
         color: on ? "var(--color-paper-panel)" : accent,
         background: on ? accent : `color-mix(in oklab, ${accent} 12%, var(--color-paper-panel))`,
