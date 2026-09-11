@@ -42,21 +42,28 @@ export function AmbientSound() {
       src.loop = true;
       const lp = ctx.createBiquadFilter();
       lp.type = "lowpass";
-      lp.frequency.value = 500;
+      // 500 Hz cut almost everything the ear registers as "sea" and left the
+      // ambience inaudible without a phone pressed to it. Brown noise is
+      // bottom-heavy to begin with; this keeps the wash soft while letting
+      // enough through to actually be heard.
+      lp.frequency.value = 820;
       const gain = ctx.createGain();
       gain.gain.value = 0;
       gainRef.current = gain;
       const lfo = ctx.createOscillator();
       lfo.frequency.value = 0.08;
       const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 0.035;
+      lfoGain.gain.value = 0.14;
       lfo.connect(lfoGain).connect(gain.gain);
       src.connect(lp).connect(gain).connect(ctx.destination);
       src.start();
       lfo.start();
     }
     ctx.resume();
-    gainRef.current?.gain.linearRampToValueAtTime(0.09, ctx.currentTime + 0.9);
+    // 0.09 was roughly -21 dB of already-filtered noise — inaudible on laptop
+    // speakers at a normal volume. This lands as a quiet room-tone, still well
+    // under anything that would talk over a video in another tab.
+    gainRef.current?.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.9);
     setOn(true);
   }
 

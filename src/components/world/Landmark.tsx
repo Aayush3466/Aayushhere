@@ -19,8 +19,19 @@ export function Landmark({ region, size = 132 }: { region: RegionKey; size?: num
   return (
     <svg viewBox="0 0 140 110" width={size} height={(size * 110) / 140} className="overflow-visible">
       {/* watercolor bloom behind the motif — makes the line-art read as painted */}
-      <ellipse cx="70" cy="64" rx="58" ry="40" fill={accent} opacity="0.14" style={{ filter: "blur(9px)" }} />
-      <ellipse cx="58" cy="52" rx="30" ry="24" fill={accent} opacity="0.1" style={{ filter: "blur(7px)" }} />
+      {/* The haze behind the landmark, as a gradient rather than a blurred
+          ellipse. Research draws one of these per region, so two SVG filter
+          regions per landmark was eight filters on one chapter — each its own
+          raster pass, none of them compositor-accelerated, all to draw a soft
+          edge a gradient gives away for nothing. */}
+      <defs>
+        <radialGradient id={`lm-haze-${region}`}>
+          <stop offset="0%" stopColor={accent} stopOpacity="0.22" />
+          <stop offset="55%" stopColor={accent} stopOpacity="0.12" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <ellipse cx="70" cy="64" rx="66" ry="46" fill={`url(#lm-haze-${region})`} />
       {region === "kathmandu" && (
         <g {...common}>
           <path d="M6 100 L44 30 L66 62 L86 22 L134 100 Z" />

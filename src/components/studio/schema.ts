@@ -19,7 +19,13 @@ export type FieldType =
   | "tags"
   | "links"
   | "image"
-  | "images";
+  | "images"
+  /** Repeatable one-line bullets — "what I actually did". */
+  | "list"
+  /** Repeatable label / value pairs — the numbers behind a claim. */
+  | "metrics"
+  /** Repeatable date / label / note — a timeline inside one entry. */
+  | "milestones";
 
 export interface FieldSpec {
   key: string;
@@ -122,6 +128,9 @@ export const COLLECTIONS: CollectionDef[] = [
       { key: "date", label: "Date", type: "text", placeholder: "2025" },
       { key: "summary", label: "Summary", type: "textarea", hint: "one line, shown on the card", wide: true },
       { key: "description", label: "Description", type: "textarea", wide: true },
+      { key: "highlights", label: "Highlights", type: "list", hint: "what you actually did", wide: true },
+      { key: "metrics", label: "Metrics", type: "metrics", hint: "numbers that back it up", wide: true },
+      { key: "milestones", label: "Timeline", type: "milestones", hint: "stages within this entry", wide: true },
       { key: "tech", label: "Tech", type: "tags", wide: true },
       { key: "liveUrl", label: "Live URL", type: "url" },
       { key: "repoUrl", label: "Repository", type: "url" },
@@ -158,6 +167,9 @@ export const COLLECTIONS: CollectionDef[] = [
       { key: "endDate", label: "End", type: "text", placeholder: "leave blank if ongoing" },
       { key: "ongoing", label: "Ongoing", type: "bool" },
       { key: "summary", label: "Summary", type: "textarea", wide: true },
+      { key: "highlights", label: "Highlights", type: "list", hint: "what you actually did", wide: true },
+      { key: "metrics", label: "Metrics", type: "metrics", hint: "numbers that back it up", wide: true },
+      { key: "milestones", label: "Timeline", type: "milestones", hint: "stages within this entry", wide: true },
       { key: "links", label: "Links", type: "links", wide: true },
     ],
     empty: () => ({ id: localId("exp"), role: "New role", org: "", ongoing: false, links: [] }),
@@ -176,6 +188,10 @@ export const COLLECTIONS: CollectionDef[] = [
       { key: "location", label: "Location", type: "text" },
       { key: "dates", label: "Dates", type: "text", placeholder: "2021 — 2025" },
       { key: "detail", label: "Detail", type: "textarea", hint: "CGPA · scholarship · honours", wide: true },
+      { key: "note", label: "Note", type: "textarea", hint: "the paragraph shown under this entry", wide: true },
+      { key: "highlights", label: "Highlights", type: "list", hint: "what you actually did", wide: true },
+      { key: "metrics", label: "Metrics", type: "metrics", hint: "numbers that back it up", wide: true },
+      { key: "milestones", label: "Timeline", type: "milestones", hint: "stages within this entry", wide: true },
       { key: "links", label: "Links", type: "links", wide: true },
     ],
     empty: () => ({ id: localId("edu"), degree: "New entry", institution: "", links: [] }),

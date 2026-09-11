@@ -14,6 +14,9 @@ import {
   TextField,
   Toggle,
   UrlField,
+  ListField,
+  MetricsField,
+  MilestonesField,
 } from "./fields";
 import { cn } from "@/lib/utils";
 
@@ -239,6 +242,12 @@ export function FieldRenderer({
         );
       case "images":
         return <ImagesField value={(value as never) ?? []} onChange={onChange} folder={spec.folder} />;
+      case "list":
+        return <ListField value={(value as string[]) ?? []} onChange={onChange} placeholder={spec.placeholder} />;
+      case "metrics":
+        return <MetricsField value={(value as never) ?? []} onChange={onChange} />;
+      case "milestones":
+        return <MilestonesField value={(value as never) ?? []} onChange={onChange} />;
       default:
         return <TextField value={value as string} onChange={onChange} placeholder={spec.placeholder} />;
     }

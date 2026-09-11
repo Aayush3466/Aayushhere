@@ -122,7 +122,10 @@ const REGION_BY_KEY: Record<RegionKey, RegionDef> = REGIONS.reduce(
 );
 
 export function getRegion(key: RegionKey): RegionDef {
-  return REGION_BY_KEY[key];
+  // Never undefined. Callers destructure the result straight into SVG attrs, so
+  // one unrecognised key from the database would take a whole chapter down —
+  // and the whole read path is built on degrading rather than throwing.
+  return REGION_BY_KEY[key] ?? REGION_BY_KEY.horizon;
 }
 
 /** The four Research Highlands, in journey order. */

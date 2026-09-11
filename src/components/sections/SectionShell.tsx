@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Flourish } from "@/components/ui/Flourish";
+import { SCROLLER_ATTR, useEntryEdge } from "./chapter-context";
 
 /**
- * A chapter shell: the vertical-scroll container for one section. Its themed
+ * A chapter shell: the vertical-scroll column for one section. Its themed
  * background stays pinned (sticky) while the details scroll over it, and the
  * column grows downward as content is added — so future records just extend the
- * page. Entering a chapter resets it to the top for a clean arrival.
+ * page.
+ *
+ * The column reports itself to the pager, which is what lets "keep scrolling
+ * past the end and the map sails onward" work. Note there is no scroll state in
+ * React here at all: the reading-progress rail is painted by the pager straight
+ * to the DOM. It used to be a `setState` in `onScroll`, which re-rendered every
+ * card in the chapter on every scroll event — the single easiest thing on the
+ * page to mistake for "the site is heavy".
  */
 export function SectionShell({
   active,
@@ -29,11 +37,16 @@ export function SectionShell({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const [prog, setProg] = useState(0);
+  const entryEdge = useEntryEdge();
 
   useEffect(() => {
-    if (active && ref.current) ref.current.scrollTop = 0;
-  }, [active]);
+    const el = ref.current;
+    if (!active || !el) return;
+    // Sailing forward drops you at the top of the new chapter; sailing back
+    // returns you to the foot of the one you were reading, which is where you
+    // actually left off.
+    el.scrollTop = entryEdge === "bottom" ? el.scrollHeight : 0;
+  }, [active, entryEdge]);
 
   const box: Variants = {
     hidden: {},
@@ -47,20 +60,13 @@ export function SectionShell({
   return (
     <div
       ref={ref}
-      onScroll={(e) => {
-        const el = e.currentTarget;
-        const max = el.scrollHeight - el.clientHeight;
-        setProg(max > 8 ? el.scrollTop / max : 0);
-      }}
+      {...{ [SCROLLER_ATTR]: "" }}
       className="h-full w-full overflow-y-auto overflow-x-hidden overscroll-contain"
+      // The browser keeps vertical scrolling (native, threaded, smooth) and the
+      // pager gets sideways gestures as cancelable events. This one line is why
+      // swiping between chapters works on a phone at all.
+      style={{ touchAction: "pan-y" }}
     >
-      {active && (
-        <div
-          aria-hidden
-          className="fixed right-0 top-0 z-40 w-[3px]"
-          style={{ height: `${prog * 100}vh`, background: `linear-gradient(180deg, ${accent}, transparent)` }}
-        />
-      )}
       <div className="pointer-events-none sticky top-0 -mb-[100dvh] h-[100dvh] overflow-hidden">
         {background}
       </div>
@@ -91,6 +97,34 @@ export function SectionShell({
           >
             {title}
           </motion.h2>
+          {/* A nib rule that draws itself under the title on arrival.
+              The GLYPHS are deliberately not stroke-drawn: doing that means
+              rendering the heading as SVG text with a stroke, which costs the
+              crispness of real type, the ability to select it, and correct
+              wrapping. Inking a rule beneath it buys the same gesture for none
+              of that. */}
+          <motion.svg
+            key={`rule-${active}`}
+            viewBox="0 0 300 10"
+            className="mx-auto mt-1 h-2.5 w-[min(300px,72%)] overflow-visible"
+            fill="none"
+            aria-hidden
+          >
+            <motion.path
+              d="M2 6 C 60 2, 110 8, 150 5 C 195 2, 245 8, 298 4"
+              stroke={accent}
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              opacity="0.7"
+              initial={{ pathLength: reduce ? 1 : 0 }}
+              animate={{ pathLength: active ? 1 : 0 }}
+              transition={{
+                duration: reduce ? 0 : 1.05,
+                delay: reduce ? 0 : 0.45,
+                ease: [0.65, 0, 0.35, 1],
+              }}
+            />
+          </motion.svg>
           {subtitle && (
             <motion.p variants={rise} className="hand mt-2 text-xl text-ink-soft sm:text-2xl">
               {subtitle}

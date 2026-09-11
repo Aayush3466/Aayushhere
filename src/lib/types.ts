@@ -34,13 +34,50 @@ export interface ResultImage {
   caption?: string;
 }
 
+/**
+ * THE ENRICHMENT SET
+ * ------------------
+ * Three optional shapes every record can carry. They exist because a portfolio
+ * entry is not one paragraph — a role is a list of things you actually did, a
+ * project is a claim plus the numbers backing it, and a long engagement has
+ * stages inside it. Making these part of the shared contract (rather than
+ * bespoke fields on one record type) means the Studio editor, the sheet layout
+ * and the renderers are each written once and every collection gets them.
+ *
+ * All optional, always. A record with none of them renders exactly as it does
+ * today — the design rule that every field beyond the essentials must collapse
+ * cleanly still holds.
+ */
+
+/** One measured claim: "Accuracy" / "98.2%". Renders as a stat row. */
+export interface Metric {
+  label: string;
+  value: string;
+}
+
+/** One dated step inside a single entry — a promotion, a phase, a release. */
+export interface Milestone {
+  date?: string;
+  label: string;
+  note?: string;
+}
+
+export interface Enrichable {
+  /** What you actually did, as bullets. The most useful field on the site. */
+  highlights?: string[];
+  /** Numbers that back the claim up. */
+  metrics?: Metric[];
+  /** A timeline within this one entry. */
+  milestones?: Milestone[];
+}
+
 export type PublicationStatus =
   | "published"
   | "under-review"
   | "submitted"
   | "manuscript";
 
-export interface Publication {
+export interface Publication extends Enrichable {
   id: string;
   title: string;
   venue?: string;
@@ -56,7 +93,7 @@ export interface Publication {
 
 export type ProjectType = "website" | "app" | "research-project";
 
-export interface Project {
+export interface Project extends Enrichable {
   id: string;
   title: string;
   type: ProjectType;
@@ -73,7 +110,7 @@ export interface Project {
   order?: number;
 }
 
-export interface Experience {
+export interface Experience extends Enrichable {
   id: string;
   role: string;
   org: string;
@@ -85,13 +122,19 @@ export interface Experience {
   order?: number;
 }
 
-export interface Education {
+export interface Education extends Enrichable {
   id: string;
   degree: string;
   institution: string;
   location?: string;
   dates?: string;
   detail?: string; // CGPA, scholarship, honours
+  /**
+   * The paragraph under the entry. Was hardcoded in the section as an
+   * India-or-else branch, which would have written prose about the Kathmandu
+   * valley beneath a degree earned anywhere else.
+   */
+  note?: string;
   links?: LinkRef[];
   order?: number;
 }

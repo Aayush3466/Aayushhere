@@ -70,6 +70,9 @@ create table if not exists public.publications (
   region        text not null default 'cybersecurity',
   links         jsonb not null default '[]'::jsonb,
   result_images jsonb not null default '[]'::jsonb,
+  highlights    text[] not null default '{}',
+  metrics       jsonb not null default '[]'::jsonb,
+  milestones    jsonb not null default '[]'::jsonb,
   sort_order    integer not null default 0,
   updated_at    timestamptz not null default now()
 );
@@ -87,6 +90,9 @@ create table if not exists public.projects (
   preview_image  text,
   preview_source text,
   region         text not null default 'development',
+  highlights     text[] not null default '{}',
+  metrics        jsonb not null default '[]'::jsonb,
+  milestones     jsonb not null default '[]'::jsonb,
   sort_order     integer not null default 0,
   updated_at     timestamptz not null default now()
 );
@@ -100,6 +106,9 @@ create table if not exists public.experience (
   ongoing    boolean not null default false,
   summary    text,
   links      jsonb not null default '[]'::jsonb,
+  highlights text[] not null default '{}',
+  metrics    jsonb not null default '[]'::jsonb,
+  milestones jsonb not null default '[]'::jsonb,
   sort_order integer not null default 0,
   updated_at timestamptz not null default now()
 );
@@ -111,7 +120,11 @@ create table if not exists public.education (
   location    text,
   dates       text,
   detail      text,
+  note        text,
   links       jsonb not null default '[]'::jsonb,
+  highlights  text[] not null default '{}',
+  metrics     jsonb not null default '[]'::jsonb,
+  milestones  jsonb not null default '[]'::jsonb,
   sort_order  integer not null default 0,
   updated_at  timestamptz not null default now()
 );

@@ -4,6 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { SECTION_INDEX, type SectionId } from "@/lib/sections";
 import { useContent } from "@/lib/store/content-store";
+import { useEnvironment } from "@/lib/store/environment";
 import { Sky } from "@/components/world/Sky";
 import { Stars } from "@/components/world/Stars";
 import { DistantRange } from "@/components/world/DistantRange";
@@ -41,13 +42,21 @@ function Parallax({ d, children }: { d: number; children: ReactNode }) {
   );
 }
 
-export function HomeSection({ onGo }: { onGo: (index: number) => void }) {
+export function HomeSection({ onGo, active = true }: { onGo: (index: number) => void; active?: boolean }) {
   const reduce = useReducedMotion();
   const { profile } = useContent();
+  // `--star-opacity` is 0 by day, so rendering the field then means 24 elements
+  // twinkling on a timer to show nothing at all. ChapterBackdrop already gates
+  // it this way; Home was rendering its own copy unconditionally.
+  const { phase } = useEnvironment();
+  const starlit = phase === "dusk" || phase === "night";
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (reduce) return;
+    // Home stays mounted while you read chapter two, so without this it would
+    // keep answering every mouse move on the whole site to parallax a vista
+    // that is a screen-width off to the left.
+    if (reduce || !active) return;
     const el = rootRef.current;
     if (!el || window.matchMedia("(pointer: coarse)").matches) return;
     let raf = 0;
@@ -68,7 +77,7 @@ export function HomeSection({ onGo }: { onGo: (index: number) => void }) {
       window.removeEventListener("pointermove", onMove);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [reduce]);
+  }, [reduce, active]);
 
   const wrap: Variants = {
     hidden: {},
@@ -85,7 +94,7 @@ export function HomeSection({ onGo }: { onGo: (index: number) => void }) {
     <div ref={rootRef} className="relative h-full w-full overflow-hidden">
       {/* the living vista — layers lean with the pointer for depth */}
       <Sky />
-      <Stars />
+      {starlit && <Stars />}
       <Parallax d={6}>
         <DistantRange />
       </Parallax>

@@ -18,25 +18,28 @@ export function Plate({
   accent,
   /** Turn the lean off for plates that are already in motion (map labels). */
   tilt = true,
+  onClick,
+  ...rest
 }: {
   children: ReactNode;
   className?: string;
   accent?: string;
   tilt?: boolean;
-}) {
+  onClick?: (e: React.MouseEvent) => void;
+} & React.HTMLAttributes<HTMLElement>) {
   const style = accent ? { borderTopColor: accent, borderTopWidth: 3 } : undefined;
   const classes = cn("paper-panel p-6 sm:p-8", className);
 
   if (!tilt) {
     return (
-      <div className={classes} style={style}>
+      <div className={classes} style={style} onClick={onClick} {...rest}>
         {children}
       </div>
     );
   }
 
   return (
-    <Tilt className={classes} style={style}>
+    <Tilt className={classes} style={style} onClick={onClick} {...rest}>
       {children}
     </Tilt>
   );

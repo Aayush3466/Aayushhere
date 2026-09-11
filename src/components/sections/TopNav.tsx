@@ -16,10 +16,12 @@ export function TopNav({
   index,
   onGo,
   name,
+  onOpenChart,
 }: {
   index: number;
   onGo: (i: number) => void;
   name: string;
+  onOpenChart: () => void;
 }) {
   const sections = useSections();
   const count = sections.length;
@@ -45,9 +47,12 @@ export function TopNav({
       <div
         className="pointer-events-auto mx-auto flex max-w-6xl items-center gap-3 rounded-2xl px-3 py-2 sm:px-4"
         style={{
-          background: "color-mix(in oklab, var(--color-paper-panel) 80%, transparent)",
-          backdropFilter: "blur(14px) saturate(1.15)",
-          WebkitBackdropFilter: "blur(14px) saturate(1.15)",
+          // No backdrop-filter. It sat over the one part of the page that is
+          // always in motion, so the blur was recomputed every single frame for
+          // the whole strip — the largest fixed cost on the site, and worst
+          // exactly where it hurts most (phones). A near-opaque paper strip
+          // reads the same against this palette and costs nothing.
+          background: "color-mix(in oklab, var(--color-paper-panel) 95%, transparent)",
           border: "1px solid color-mix(in oklab, var(--color-paper-edge) 92%, transparent)",
           boxShadow:
             "0 1px 0 rgba(255,255,255,0.6) inset, 0 16px 44px -24px rgba(58,46,26,0.55)",
@@ -59,8 +64,16 @@ export function TopNav({
           className="flex shrink-0 items-center gap-2"
           aria-label="Home"
         >
-          <CompassRose size={30} />
-          <span className="block max-w-[34vw] truncate font-display text-sm font-semibold text-ink sm:max-w-none">
+          {/* -18deg at the first chapter through +18deg at the last: the needle
+              swings east across the voyage. */}
+          <CompassRose
+            size={30}
+            heading={count > 1 ? -18 + (index / (count - 1)) * 36 : 0}
+          />
+          {/* On a phone the name was eating a third of the bar and squeezing the
+              chapter strip down to one and a half clipped labels. The rose is
+              the home button; the name is on the chart itself. */}
+          <span className="hidden font-display text-sm font-semibold text-ink sm:block">
             {name}
           </span>
         </button>
@@ -97,6 +110,19 @@ export function TopNav({
 
         <div className="flex shrink-0 items-center gap-2.5">
           <Clocks />
+          {/* The way in to the chart on a phone, where the minimap is hidden. */}
+          <button
+            type="button"
+            onClick={onOpenChart}
+            aria-label="Open the chart"
+            title="The chart (M)"
+            className="grid h-9 w-9 place-items-center rounded-full border border-[color:var(--color-paper-edge)] bg-[color:var(--color-paper-panel)] text-ink-soft transition-all hover:-translate-y-0.5 hover:text-ink"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z" />
+              <path d="M9 4v13.5M15 6.5V20" />
+            </svg>
+          </button>
           <div className="flex items-center gap-1.5">
             <ArrowBtn dir="prev" disabled={index === 0} onClick={() => onGo(index - 1)} />
             <ArrowBtn dir="next" disabled={index === count - 1} onClick={() => onGo(index + 1)} />

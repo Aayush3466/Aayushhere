@@ -5,15 +5,70 @@
  * of place: the Taj Mahal & an Odisha (Kalinga) temple for the COMPEX years in
  * India, and Dharahara over a Kathmandu skyline for home & school in Nepal.
  * Stylised silhouettes — warm, drawn, never photographic.
+ *
+ * `size` is a MAXIMUM, not a fixed width. Each scene renders fluid so it shrinks
+ * with its column instead of overflowing it — a fixed-width SVG in a two-column
+ * grid is exactly how the Education plates ended up sliced off at the right.
  */
 
 const IVORY = "#f8f2e4";
 
+/**
+ * The soft haze behind each landmark.
+ *
+ * These were blurred ellipses — `filter: blur(12px)` and friends. An SVG filter
+ * forces its own raster pass and is not compositor-accelerated, and Education
+ * keeps up to three of these scenes mounted at once (the chapter you are on plus
+ * its neighbours), so the site was carrying half a dozen filter regions to draw
+ * something a gradient draws for free. A radial gradient is the same glow with
+ * no filter at all.
+ *
+ * Gradient ids are document-global for inline SVG, which is why each one is
+ * named after the scene that owns it.
+ */
+function Glow({
+  id,
+  color,
+  cx,
+  cy,
+  rx,
+  ry,
+  opacity,
+}: {
+  id: string;
+  color: string;
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+  opacity: number;
+}) {
+  return (
+    <>
+      <defs>
+        <radialGradient id={id}>
+          <stop offset="0%" stopColor={color} stopOpacity={opacity} />
+          <stop offset="55%" stopColor={color} stopOpacity={opacity * 0.55} />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={`url(#${id})`} />
+    </>
+  );
+}
+
 export function TajMahal({ size = 220 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 200 152" width={size} height={(size * 152) / 200} className="overflow-visible" aria-hidden>
-      <ellipse cx="100" cy="98" rx="94" ry="50" fill="#c9973f" opacity="0.13" style={{ filter: "blur(12px)" }} />
-      <ellipse cx="100" cy="70" rx="46" ry="46" fill="#c9973f" opacity="0.1" style={{ filter: "blur(10px)" }} />
+    <svg
+      viewBox="0 0 200 152"
+      width="100%"
+      style={{ maxWidth: size }}
+      className="h-auto overflow-visible"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden
+    >
+      <Glow id="glow-taj-base" color="#c9973f" cx={100} cy={98} rx={104} ry={58} opacity={0.2} />
+      <Glow id="glow-taj-dome" color="#c9973f" cx={100} cy={70} rx={56} ry={56} opacity={0.16} />
       <g fill={IVORY} stroke="#b98a3e" strokeWidth="2" strokeLinejoin="round">
         <rect x="12" y="128" width="176" height="12" rx="1.5" />
         {/* minarets */}
@@ -41,9 +96,16 @@ export function TajMahal({ size = 220 }: { size?: number }) {
 
 export function DharaharaScene({ size = 240 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 230 168" width={size} height={(size * 168) / 230} className="overflow-visible" aria-hidden>
-      <ellipse cx="115" cy="110" rx="110" ry="52" fill="#6e7b55" opacity="0.12" style={{ filter: "blur(13px)" }} />
-      <ellipse cx="137" cy="80" rx="40" ry="46" fill="#c0883c" opacity="0.1" style={{ filter: "blur(11px)" }} />
+    <svg
+      viewBox="0 0 230 168"
+      width="100%"
+      style={{ maxWidth: size }}
+      className="h-auto overflow-visible"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden
+    >
+      <Glow id="glow-dhara-base" color="#6e7b55" cx={115} cy={110} rx={122} ry={60} opacity={0.19} />
+      <Glow id="glow-dhara-tower" color="#c0883c" cx={137} cy={80} rx={50} ry={56} opacity={0.16} />
       {/* hills */}
       <path
         d="M0 150 Q60 116 120 138 Q180 118 230 146 V168 H0 Z"
@@ -76,8 +138,15 @@ export function DharaharaScene({ size = 240 }: { size?: number }) {
 
 export function OdishaTemple({ size = 150 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 140 160" width={size} height={(size * 160) / 140} className="overflow-visible" aria-hidden>
-      <ellipse cx="70" cy="100" rx="66" ry="60" fill="#b96a4c" opacity="0.12" style={{ filter: "blur(12px)" }} />
+    <svg
+      viewBox="0 0 140 160"
+      width="100%"
+      style={{ maxWidth: size }}
+      className="h-auto overflow-visible"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden
+    >
+      <Glow id="glow-odisha" color="#b96a4c" cx={70} cy={100} rx={76} ry={70} opacity={0.19} />
       <g fill={IVORY} stroke="#b96a4c" strokeWidth="2" strokeLinejoin="round">
         {/* jagamohana */}
         <path d="M12 150 V110 H70 V150 Z" />
@@ -92,6 +161,52 @@ export function OdishaTemple({ size = 150 }: { size?: number }) {
       <g stroke="#b96a4c" strokeWidth="1" opacity="0.4" fill="none">
         <path d="M84 148 V44" /><path d="M92 148 V32" /><path d="M100 148 V44" />
       </g>
+    </svg>
+  );
+}
+
+/**
+ * The neutral scene: a lectern, books and a pennant under an arch.
+ *
+ * Every entry needs SOMETHING drawn, and the alternative was to keep guessing —
+ * the old code drew Dharahara over the Kathmandu valley for any location it did
+ * not recognise, which would have put a Nepali skyline under a degree earned in
+ * Berlin. A scene that says "study" and nothing about geography is the honest
+ * default; add a landmark here when a place earns one.
+ */
+export function ScholarScene({ size = 240 }: { size?: number }) {
+  return (
+    <svg
+      viewBox="0 0 220 160"
+      width="100%"
+      style={{ maxWidth: size }}
+      className="h-auto overflow-visible"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden
+    >
+      <Glow id="glow-scholar" color="#b98a3e" cx={110} cy={112} rx={110} ry={54} opacity={0.19} />
+      {/* the arch */}
+      <g fill="none" stroke="#b98a3e" strokeWidth="2" strokeLinejoin="round">
+        <path d="M46 146 V74 Q110 18 174 74 V146" />
+        <path d="M62 146 V80 Q110 38 158 80 V146" opacity="0.5" />
+      </g>
+      {/* lectern */}
+      <g fill={IVORY} stroke="#c2765a" strokeWidth="2" strokeLinejoin="round">
+        <path d="M84 146 V120 H136 V146 Z" />
+        <path d="M78 120 L110 104 L142 120 Z" />
+      </g>
+      {/* a short stack of books */}
+      <g fill={IVORY} stroke="#6e7b55" strokeWidth="1.8" strokeLinejoin="round">
+        <rect x="150" y="132" width="34" height="7" rx="1.5" />
+        <rect x="153" y="125" width="28" height="7" rx="1.5" />
+        <rect x="147" y="118" width="38" height="7" rx="1.5" />
+      </g>
+      {/* pennant */}
+      <g stroke="#3f7c75" strokeWidth="2" fill="none" strokeLinecap="round">
+        <path d="M110 104 V64" />
+        <path d="M110 66 L136 74 L110 82 Z" fill="#3f7c75" opacity="0.55" stroke="none" />
+      </g>
+      <circle cx="110" cy="61" r="2.6" fill="#3f7c75" />
     </svg>
   );
 }

@@ -6,7 +6,7 @@ import { EnvironmentProvider } from "@/lib/store/environment";
 import { InkingLoader } from "@/components/InkingLoader";
 import { SectionPager } from "@/components/sections/SectionPager";
 import { CompassChat } from "@/components/chat/CompassChat";
-import { CursorFollower } from "@/components/CursorFollower";
+import { NibCursor } from "@/components/NibCursor";
 import { AmbientSound } from "@/components/AmbientSound";
 
 /**
@@ -21,7 +21,7 @@ export function JourneyClient({ content }: { content: SiteContent }) {
         <InkingLoader />
         <SectionPager />
         <CompassChat />
-        <CursorFollower />
+        <NibCursor />
         <AmbientSound />
       </ContentProvider>
     </EnvironmentProvider>

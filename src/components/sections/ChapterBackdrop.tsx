@@ -1,17 +1,41 @@
+"use client";
+
 import type { SectionId } from "@/lib/sections";
 import { Clouds } from "@/components/world/Clouds";
 import { Stars } from "@/components/world/Stars";
+import { useEnvironment } from "@/lib/store/environment";
 
 /**
  * A soft, themed wash behind each chapter — enough to give the page a distinct
  * sense of place, kept low-contrast so the paper panels above stay perfectly
  * readable. One variant per chapter.
+ *
+ * Everything that MOVES here is gated on `active`. The pager keeps the two
+ * neighbouring chapters mounted so a swipe reveals a page that is already laid
+ * out, but a drifting cloud and a breathing glow that nobody can see are pure
+ * cost — an offscreen chapter gets the wash and the horizon, and nothing else.
  */
-export function ChapterBackdrop({ variant }: { variant: SectionId }) {
+export function ChapterBackdrop({
+  variant,
+  active = true,
+}: {
+  variant: SectionId;
+  active?: boolean;
+}) {
+  const { phase } = useEnvironment();
+  // Stars are invisible by day (`--star-opacity: 0`) — so by day they are 36
+  // elements twinkling on a timer to show nothing at all.
+  const starlit = phase === "dusk" || phase === "night";
+  const clouded =
+    variant === "home" ||
+    variant === "education" ||
+    variant === "gallery" ||
+    variant === "contact";
+
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div className="absolute inset-0" style={{ background: gradient(variant) }} />
-      {/* a soft light that slowly drifts — keeps every page quietly alive */}
+      {/* a soft light that slowly drifts — keeps the page you're on quietly alive */}
       <div
         className="absolute"
         style={{
@@ -23,15 +47,12 @@ export function ChapterBackdrop({ variant }: { variant: SectionId }) {
           maxHeight: 720,
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--color-sun) 42%, transparent), transparent 62%)",
-          animation: "glow-drift 20s ease-in-out infinite",
+          animation: active ? "glow-drift 20s ease-in-out infinite" : undefined,
         }}
       />
-      <Stars />
+      {active && starlit && <Stars />}
 
-      {(variant === "home" ||
-        variant === "education" ||
-        variant === "gallery" ||
-        variant === "contact") && <Clouds />}
+      {active && clouded && <Clouds />}
 
       {/* a faint horizon silhouette per place */}
       <svg
@@ -77,8 +98,12 @@ export function ChapterBackdrop({ variant }: { variant: SectionId }) {
         )}
       </svg>
 
-      {/* the paper grain ties every chapter to the same hand-made sheet */}
-      <div className="paper-grain" style={{ opacity: 0.06 }} />
+      {/* The paper grain ties every chapter to the same hand-made sheet.
+          `.grain-inline`, not `.paper-grain`: the latter is `position: fixed`,
+          and a fixed element inside the pager's translated track resolves
+          against the TRACK — so each chapter was laying down a grain layer eight
+          screens wide, in multiply blend, and stacking eight of them. */}
+      <div className="grain-inline" style={{ opacity: 0.07 }} />
     </div>
   );
 }

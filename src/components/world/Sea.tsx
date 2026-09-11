@@ -77,17 +77,20 @@ export function Sea() {
           top: 0,
           width: "34%",
           height: "70%",
+          // Painted straight on rather than blended: this layer rides the
+          // sea's bob animation, so a blend mode here re-composites the water
+          // beneath it on every frame of a loop that never ends.
           background:
-            "radial-gradient(60% 90% at 40% 0%, color-mix(in oklab, var(--color-sun) 60%, transparent), transparent 70%)",
-          mixBlendMode: "screen",
-          opacity: 0.7,
+            "radial-gradient(60% 90% at 40% 0%, color-mix(in oklab, var(--color-sun) 78%, transparent), transparent 70%)",
+          opacity: 0.55,
         }}
       />
 
+      {/* Three bands, not five. Each is a 200%-wide layer drifting forever;
+          the two that were removed sat behind the others and read as depth that
+          the remaining gradient already provides. */}
       <WaveBand top={0} color="color-mix(in oklab, var(--color-sea-2) 85%, white)" opacity={0.7} dur={34} foam />
-      <WaveBand top={22} color="var(--color-sea-2)" opacity={0.8} dur={27} reverse foam />
-      <WaveBand top={58} color="color-mix(in oklab, var(--color-sea-3) 88%, white)" opacity={0.82} dur={24} foam />
-      <WaveBand top={96} color="var(--color-sea-3)" opacity={0.85} dur={21} reverse />
+      <WaveBand top={58} color="color-mix(in oklab, var(--color-sea-3) 88%, white)" opacity={0.82} dur={24} reverse foam />
       <WaveBand top={150} color="var(--color-sea-4)" opacity={0.92} dur={30} />
 
       {/* the near shoreline foam line */}

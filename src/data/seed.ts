@@ -67,6 +67,9 @@ export const SEED: SiteContent = {
       location: "Odisha, India",
       dates: "Oct 2021 – May 2025",
       detail: "CGPA 8.93 / 10.0 · Funded by the COMPEX Scholarship (Indian Embassy)",
+      // Was hardcoded in EducationSection and shown under whichever entry
+      // happened to match /india/. It belongs to the record.
+      note: "Four years across the border on a fully-funded COMPEX scholarship — where the research began.",
       order: 1,
     },
     {
@@ -76,6 +79,7 @@ export const SEED: SiteContent = {
       location: "Kathmandu, Nepal",
       dates: "",
       detail: "GPA 3.71 / 4.0 · Awarded a +2 study scholarship",
+      note: "Home ground — school in the Kathmandu valley, beneath Dharahara and the hills.",
       order: 2,
     },
   ],

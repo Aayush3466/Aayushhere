@@ -8,10 +8,17 @@ export function CompassRose({
   className,
   size = 120,
   spin = false,
+  /**
+   * Degrees to swing the needle. The nav passes the direction of travel, so the
+   * compass reads the voyage instead of merely decorating it — the needle leans
+   * east as you sail east.
+   */
+  heading = 0,
 }: {
   className?: string;
   size?: number;
   spin?: boolean;
+  heading?: number;
 }) {
   return (
     <svg
@@ -21,6 +28,10 @@ export function CompassRose({
       className={cn("select-none", className)}
       role="img"
       aria-label="Compass rose"
+      style={{
+        transform: `rotate(${heading}deg)`,
+        transition: "transform 1.1s cubic-bezier(0.22, 1, 0.36, 1)",
+      }}
     >
       {/* faint outer ring, slightly wobbled so it reads hand-drawn */}
       <circle

@@ -25,6 +25,9 @@ import type {
   ResultImage,
   SkillGroup,
   SocialLink,
+  Enrichable,
+  Metric,
+  Milestone,
 } from "@/lib/types";
 import type { SectionDef, SectionId } from "@/lib/sections";
 
@@ -102,6 +105,57 @@ export function toProfile(r: Row): Profile {
   };
 }
 
+/**
+ * The enrichment set, read defensively.
+ *
+ * These columns may not exist yet — Supabase DDL cannot run from an API key, so
+ * there is always a window where the code knows about a field the database does
+ * not. `select("*")` simply omits a missing column, and every one of these
+ * returns undefined for anything that isn't the shape it expects, so a record
+ * from an un-migrated table renders exactly as it did before.
+ */
+function strList(v: unknown): string[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out = v.map((x) => String(x ?? "").trim()).filter(Boolean);
+  return out.length ? out : undefined;
+}
+
+function metrics(v: unknown): Metric[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out = (v as Record<string, unknown>[])
+    .filter((m) => m && typeof m === "object")
+    .map((m) => ({ label: str(m.label), value: str(m.value) }))
+    .filter((m) => m.label || m.value);
+  return out.length ? out : undefined;
+}
+
+function milestones(v: unknown): Milestone[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out = (v as Record<string, unknown>[])
+    .filter((m) => m && typeof m === "object")
+    .map((m) => ({ date: opt(m.date), label: str(m.label), note: opt(m.note) }))
+    .filter((m) => m.label || m.date);
+  return out.length ? out : undefined;
+}
+
+/** Every record gets the same three, read the same way. */
+function enrichment(r: Row) {
+  return {
+    highlights: strList(r.highlights),
+    metrics: metrics(r.metrics),
+    milestones: milestones(r.milestones),
+  };
+}
+
+/** ...and written back the same way. `drop` removes the undefined ones. */
+function enrichmentRow(e: Partial<Enrichable>) {
+  return {
+    highlights: e.highlights,
+    metrics: e.metrics,
+    milestones: e.milestones,
+  };
+}
+
 export function toPublication(r: Row): Publication {
   return {
     id: str(r.id),
@@ -115,6 +169,7 @@ export function toPublication(r: Row): Publication {
     links: links(r.links),
     resultImages: resultImages(r.result_images),
     order: num(r.sort_order),
+    ...enrichment(r),
   };
 }
 
@@ -133,6 +188,7 @@ export function toProject(r: Row): Project {
     previewSource: (opt(r.preview_source) as "auto" | "manual" | undefined) ?? null,
     region: str(r.region, "development") as RegionKey,
     order: num(r.sort_order),
+    ...enrichment(r),
   };
 }
 
@@ -147,6 +203,7 @@ export function toExperience(r: Row): Experience {
     summary: opt(r.summary),
     links: links(r.links),
     order: num(r.sort_order),
+    ...enrichment(r),
   };
 }
 
@@ -158,8 +215,10 @@ export function toEducation(r: Row): Education {
     location: opt(r.location),
     dates: opt(r.dates),
     detail: opt(r.detail),
+    note: opt(r.note),
     links: links(r.links),
     order: num(r.sort_order),
+    ...enrichment(r),
   };
 }
 
@@ -226,6 +285,7 @@ export function fromPublication(p: Partial<Publication>): Row {
     links: p.links,
     result_images: p.resultImages,
     sort_order: p.order,
+    ...enrichmentRow(p),
   });
 }
 
@@ -244,6 +304,7 @@ export function fromProject(p: Partial<Project>): Row {
     preview_source: p.previewSource ?? undefined,
     region: p.region,
     sort_order: p.order,
+    ...enrichmentRow(p),
   });
 }
 
@@ -258,6 +319,7 @@ export function fromExperience(e: Partial<Experience>): Row {
     summary: e.summary,
     links: e.links,
     sort_order: e.order,
+    ...enrichmentRow(e),
   });
 }
 
@@ -269,8 +331,10 @@ export function fromEducation(e: Partial<Education>): Row {
     location: e.location,
     dates: e.dates,
     detail: e.detail,
+    note: e.note,
     links: e.links,
     sort_order: e.order,
+    ...enrichmentRow(e),
   });
 }
 

@@ -6,6 +6,8 @@ import { SectionShell } from "./SectionShell";
 import { ChapterBackdrop } from "./ChapterBackdrop";
 import { Pill, TechChips, LinkList } from "./ui";
 import { Reveal } from "@/components/ui/Reveal";
+import { Disclosure, Teaser } from "@/components/ui/Expandable";
+import { CARD_BULLETS, FullDetail, Highlights, Metrics, hasHiddenDetail } from "./enrichment";
 
 const TYPE_LABEL: Record<string, string> = {
   website: "Website",
@@ -20,7 +22,7 @@ function BrowserFrame({ project }: { project: Project }) {
     ? project.liveUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
     : "preview";
   return (
-    <div className="overflow-hidden rounded-xl border border-[color:var(--color-paper-edge)] shadow-[0_18px_40px_-24px_rgba(58,46,26,0.5)]">
+    <div className="overflow-hidden rounded-[10px] border border-[color:color-mix(in_oklab,var(--color-paper-edge)_70%,transparent)] shadow-[0_14px_32px_-22px_rgba(58,46,26,0.45)]">
       <div className="flex items-center gap-2 border-b border-[color:var(--color-paper-edge)] bg-[color:var(--color-paper-deep)] px-3 py-2">
         <span className="flex gap-1.5">
           <i className="h-2.5 w-2.5 rounded-full" style={{ background: "#c2765a" }} />
@@ -81,36 +83,56 @@ export function ProjectsSection({ active }: { active: boolean }) {
       eyebrow={DEF.eyebrow}
       title={DEF.title}
       subtitle={DEF.subtitle}
-      background={<ChapterBackdrop variant="projects" />}
+      background={<ChapterBackdrop variant="projects" active={active} />}
     >
-      <div className="grid gap-10 md:grid-cols-2">
-        {projects.map((p, i) => (
+      <div className="grid gap-8 sm:gap-10 md:grid-cols-2">
+        {projects.map((p, i) => {
+          const links = [
+            ...(p.liveUrl ? [{ label: "Visit live", url: p.liveUrl }] : []),
+            ...(p.repoUrl ? [{ label: "Source", url: p.repoUrl }] : []),
+          ];
+          return (
           <Reveal key={p.id} delay={(i % 2) * 0.08} className="flex">
-            <article className="card-hover flex w-full flex-col rounded-2xl p-1">
+            {/* The preview used to sit flush inside a bare `p-1` wrapper, so the
+                frame's border ran hard against the card's own edge and the whole
+                grid read as cramped. It is a paper plate now, with the preview
+                inset in it the way a print would be mounted — and the whole
+                plate, preview included, opens the detail. */}
+            <Disclosure
+              as="article"
+              className="paper-panel card-hover flex w-full flex-col p-4 sm:p-5"
+              accent={DEF.accent}
+              text={p.description ?? p.summary}
+              expandable={hasHiddenDetail(p)}
+              title={p.title}
+              cta="See the detail"
+              meta={[TYPE_LABEL[p.type] ?? p.type, p.date].filter(Boolean).join("  ·  ")}
+              detail={
+                <FullDetail record={p} accent={DEF.accent}>
+                  {p.tech && <TechChips items={p.tech} accent={DEF.accent} />}
+                  <LinkList links={links} accent={DEF.accent} />
+                </FullDetail>
+              }
+            >
             <BrowserFrame project={p} />
-            <div className="mt-5">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="mt-5 px-0.5 pb-0.5">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <h3 className="font-display text-xl font-semibold">{p.title}</h3>
                 <Pill accent={DEF.accent}>{TYPE_LABEL[p.type] ?? p.type}</Pill>
                 {p.date && <span className="hand text-lg text-ink-faint">{p.date}</span>}
               </div>
-              {(p.summary || p.description) && (
-                <p className="mt-2 leading-relaxed text-ink-soft">
-                  {p.description ?? p.summary}
-                </p>
-              )}
-              {p.tech && <TechChips items={p.tech} accent={DEF.accent} />}
-              <LinkList
-                links={[
-                  ...(p.liveUrl ? [{ label: "Visit live", url: p.liveUrl }] : []),
-                  ...(p.repoUrl ? [{ label: "Source", url: p.repoUrl }] : []),
-                ]}
-                accent={DEF.accent}
-              />
+              <Teaser className="mt-2 leading-relaxed text-ink-soft" />
+              <Metrics items={p.metrics} accent={DEF.accent} />
+              <Highlights items={p.highlights} accent={DEF.accent} limit={CARD_BULLETS} />
+              {/* Five chips on the card, the full stack in the sheet — a tile
+                  that lists twelve technologies is a wall, not a summary. */}
+              {p.tech && <TechChips items={p.tech.slice(0, 5)} accent={DEF.accent} />}
+              <LinkList links={links} accent={DEF.accent} />
             </div>
-            </article>
+            </Disclosure>
           </Reveal>
-        ))}
+          );
+        })}
       </div>
 
       {projects.length === 0 && (

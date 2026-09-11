@@ -132,6 +132,53 @@
     mix-blend-mode: multiply;
   }
 
+  /* The same sheet, but as an ORDINARY layer: absolute rather than fixed (a
+     fixed element inside the pager's translated track resolves against the
+     track, not the viewport) and with no blend mode. A `mix-blend-mode` layer
+     forces the compositor to read back everything underneath it on every frame,
+     which is affordable once and ruinous eight times over. */
+  .grain-inline {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      url("/textures/paper-grain.svg"),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 2px,
+        rgba(90, 72, 44, 0.05) 2px 3px
+      );
+    background-size:
+      220px 220px,
+      auto;
+  }
+
+  /* A coffee ring. Nothing sells "this is a real sheet someone worked on" like
+     one honest blemish — and unlike grain or a gradient it reads instantly,
+     because it is a specific object rather than a texture. Fixed position and
+     fixed opacity: no blend mode, nothing animated, one paint. */
+  .coffee-ring {
+    position: absolute;
+    pointer-events: none;
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    border: 7px solid color-mix(in oklab, #8a6a3a 16%, transparent);
+    box-shadow:
+      inset 0 0 22px -6px color-mix(in oklab, #8a6a3a 12%, transparent),
+      0 0 14px -4px color-mix(in oklab, #8a6a3a 10%, transparent);
+    /* Never a clean circle — a cup is set down at an angle and lifts unevenly. */
+    transform: rotate(-14deg) skewX(-3deg);
+    opacity: 0.5;
+  }
+  .coffee-ring::after {
+    content: "";
+    position: absolute;
+    inset: 12px 9px 15px 14px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in oklab, #8a6a3a 10%, transparent);
+  }
+
   .paper-vignette {
     position: fixed;
     inset: 0;
@@ -163,7 +210,6 @@
     border: 1px solid color-mix(in oklab, var(--color-paper-edge) 70%, transparent);
     border-radius: var(--radius-panel);
     box-shadow: 0 14px 34px -24px rgba(58, 46, 26, 0.35);
-    backdrop-filter: blur(2px);
   }
 
   /* Hand-lettered marginalia: map labels, signposts, coordinates. */
@@ -363,10 +409,25 @@
 }
 
 @layer components {
-  /* GPU hint for continuously animated layers. */
+  /* GPU hint for continuously animated layers.
+     `will-change` pins a permanent compositor layer, so it is only ever put on
+     something that is genuinely animating right now — the drifting clouds and
+     wave bands of the ACTIVE chapter. Offscreen chapters don't render these at
+     all, which is what keeps the layer count bounded. */
   .will-move {
     will-change: transform;
     backface-visibility: hidden;
+  }
+
+  /* A mounted-but-offscreen chapter. The pager keeps the two neighbours alive
+     so a swipe lands on a page that is already laid out — but "alive" must not
+     mean "still animating". Pausing rather than unmounting keeps the reveal
+     instant while costing the compositor nothing. */
+  .chapter-idle,
+  .chapter-idle *,
+  .chapter-idle *::before,
+  .chapter-idle *::after {
+    animation-play-state: paused !important;
   }
 
   /* Ambient loops as utilities so JSX stays readable. */
@@ -515,7 +576,7 @@ body {
     border-radius: 14px 12px 15px 12px / 12px 15px 12px 14px;
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 40%),
-      color-mix(in oklab, var(--color-paper-panel) 88%, transparent);
+      color-mix(in oklab, var(--color-paper-panel) 95%, transparent);
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.5) inset,
       0 16px 36px -26px rgba(58, 46, 26, 0.38);
@@ -563,7 +624,6 @@ body {
     border-radius: inherit;
     pointer-events: none;
     opacity: 0;
-    mix-blend-mode: soft-light;
     background: radial-gradient(
       460px circle at var(--mx, 50%) var(--my, 50%),
       rgba(255, 255, 255, 0.75),
@@ -571,8 +631,12 @@ body {
     );
     transition: opacity 0.45s ease;
   }
+  /* The blend is attached on hover ONLY. Left on permanently it gives every
+     plate on the page its own blended compositing layer to show an effect that
+     is invisible until you point at it. */
   .sheen:hover::before {
     opacity: 1;
+    mix-blend-mode: soft-light;
   }
 
   /* ---- ink underline ----------------------------------------------------

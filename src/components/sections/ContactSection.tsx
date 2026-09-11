@@ -104,7 +104,7 @@ export function ContactSection({ active }: { active: boolean }) {
       eyebrow={DEF.eyebrow}
       title={DEF.title}
       subtitle={DEF.subtitle}
-      background={<ChapterBackdrop variant="contact" />}
+      background={<ChapterBackdrop variant="contact" active={active} />}
     >
       <div className="grid items-start gap-10 md:grid-cols-[0.9fr_1.1fr]">
         {/* the lighthouse + invitation */}

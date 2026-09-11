@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 /**
  * ENVIRONMENT — the world reacts to the visitor's local time. Phase drives a
@@ -40,7 +40,19 @@ export function EnvironmentProvider({ children }: { children: ReactNode }) {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    const tick = () => setNow(new Date());
+    // This context sits above the entire map, so every state change here
+    // re-renders every mounted chapter. Ticking a fresh Date every 15 seconds
+    // did exactly that — four times a minute — to redraw a clock that only
+    // changes once a minute. Commit a new value ONLY when something a viewer
+    // could actually see has changed.
+    let shown = "";
+    const tick = () => {
+      const d = new Date();
+      const stamp = `${fmt(d)}|${fmt(d, "Asia/Kathmandu")}|${phaseFor(d.getHours())}`;
+      if (stamp === shown) return;
+      shown = stamp;
+      setNow(d);
+    };
     tick();
     const id = setInterval(tick, 15_000);
     return () => clearInterval(id);
@@ -52,18 +64,19 @@ export function EnvironmentProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-phase", phase);
   }, [phase]);
 
-  return (
-    <Ctx.Provider
-      value={{
-        now,
-        phase,
-        localTime: now ? fmt(now) : "",
-        kathmanduTime: now ? fmt(now, "Asia/Kathmandu") : "",
-      }}
-    >
-      {children}
-    </Ctx.Provider>
+  // Stable identity between ticks, so a re-render higher up doesn't cascade
+  // through every chapter for no reason.
+  const value = useMemo<Env>(
+    () => ({
+      now,
+      phase,
+      localTime: now ? fmt(now) : "",
+      kathmanduTime: now ? fmt(now, "Asia/Kathmandu") : "",
+    }),
+    [now, phase],
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export const useEnvironment = () => useContext(Ctx);

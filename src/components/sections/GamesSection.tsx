@@ -61,7 +61,7 @@ export function GamesSection({ active }: { active: boolean }) {
       eyebrow={DEF.eyebrow}
       title={DEF.title}
       subtitle={DEF.subtitle}
-      background={<ChapterBackdrop variant="games" />}
+      background={<ChapterBackdrop variant="games" active={active} />}
     >
       <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
         {/* the test */}

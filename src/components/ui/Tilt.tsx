@@ -21,6 +21,7 @@ export function Tilt({
   style,
   max = 3.2,
   as: Tag = "div",
+  ...rest
 }: {
   children: ReactNode;
   className?: string;
@@ -28,7 +29,7 @@ export function Tilt({
   /** Maximum lean in degrees. Small on purpose — this should be felt, not seen. */
   max?: number;
   as?: "div" | "li" | "article";
-}) {
+} & React.HTMLAttributes<HTMLElement>) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const frame = useRef(0);
@@ -74,6 +75,7 @@ export function Tilt({
       style={style}
       onPointerMove={onMove}
       onPointerLeave={reset}
+      {...rest}
     >
       {children}
     </Tag>

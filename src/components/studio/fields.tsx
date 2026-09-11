@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import type { LinkRef, SkillGroup } from "@/lib/types";
+import type { LinkRef, Metric, Milestone, SkillGroup } from "@/lib/types";
 import { uploadMedia } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 
@@ -709,5 +709,245 @@ export function SkillsField({
         + add a skill group
       </button>
     </div>
+  );
+}
+
+
+/* ------------------------- the enrichment editors ------------------------- */
+
+/**
+ * A shared frame for the three repeatable list editors below: rows you can add,
+ * reorder and delete, with one "add" affordance underneath. They look and behave
+ * identically on purpose — once you have edited bullets you already know how to
+ * edit metrics.
+ */
+function RowList({
+  rows,
+  onMove,
+  onRemove,
+  onAdd,
+  addLabel,
+  empty,
+  children,
+}: {
+  rows: unknown[];
+  onMove: (i: number, dir: -1 | 1) => void;
+  onRemove: (i: number) => void;
+  onAdd: () => void;
+  addLabel: string;
+  empty: string;
+  children: (i: number) => ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      {rows.length === 0 && (
+        <p className="text-[0.78rem] italic text-ink-faint/80">{empty}</p>
+      )}
+      {rows.map((_, i) => (
+        <div key={i} className="flex items-start gap-1.5">
+          <div className="flex flex-1 flex-wrap gap-2">{children(i)}</div>
+          <div className="flex shrink-0 items-center">
+            <RowBtn label="Move up" disabled={i === 0} onClick={() => onMove(i, -1)}>
+              ↑
+            </RowBtn>
+            <RowBtn
+              label="Move down"
+              disabled={i === rows.length - 1}
+              onClick={() => onMove(i, 1)}
+            >
+              ↓
+            </RowBtn>
+            <RowBtn label="Remove" danger onClick={() => onRemove(i)}>
+              ×
+            </RowBtn>
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={onAdd}
+        className="text-sm underline underline-offset-4"
+        style={{ color: "var(--color-teal-ink)" }}
+      >
+        + {addLabel}
+      </button>
+    </div>
+  );
+}
+
+function RowBtn({
+  children,
+  label,
+  onClick,
+  disabled,
+  danger,
+}: {
+  children: ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className="grid h-7 w-6 place-items-center text-base leading-none opacity-55 transition-opacity hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-20"
+      style={{ color: danger ? "var(--color-terracotta)" : "var(--color-ink-soft)" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Generic list reorder used by all three editors. */
+function moved<T>(arr: T[], i: number, dir: -1 | 1): T[] {
+  const j = i + dir;
+  if (j < 0 || j >= arr.length) return arr;
+  const next = [...arr];
+  [next[i], next[j]] = [next[j], next[i]];
+  return next;
+}
+
+/**
+ * BULLETS. The single most useful field on the site — "what did you actually
+ * do" is the question every reader is holding, and a paragraph answers it worse
+ * than four lines do.
+ *
+ * Enter adds the next bullet, so writing a list never means reaching for the
+ * mouse; backspace on an empty bullet removes it, the way every list editor
+ * people already use behaves.
+ */
+export function ListField({
+  value,
+  onChange,
+  placeholder = "Built X that did Y",
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+}) {
+  const rows = value ?? [];
+  const set = (i: number, v: string) => onChange(rows.map((r, j) => (j === i ? v : r)));
+
+  return (
+    <RowList
+      rows={rows}
+      onMove={(i, d) => onChange(moved(rows, i, d))}
+      onRemove={(i) => onChange(rows.filter((_, j) => j !== i))}
+      onAdd={() => onChange([...rows, ""])}
+      addLabel="add bullet"
+      empty="No bullets yet — these show as a list on the card and in the detail sheet."
+    >
+      {(i) => (
+        <input
+          className={inputCls}
+          placeholder={placeholder}
+          value={rows[i]}
+          autoFocus={rows[i] === "" && i === rows.length - 1}
+          onChange={(e) => set(i, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onChange([...rows.slice(0, i + 1), "", ...rows.slice(i + 1)]);
+            } else if (e.key === "Backspace" && rows[i] === "" && rows.length > 1) {
+              e.preventDefault();
+              onChange(rows.filter((_, j) => j !== i));
+            }
+          }}
+        />
+      )}
+    </RowList>
+  );
+}
+
+/** METRICS — the numbers that turn a claim into evidence. */
+export function MetricsField({
+  value,
+  onChange,
+}: {
+  value: Metric[];
+  onChange: (v: Metric[]) => void;
+}) {
+  const rows = value ?? [];
+  const set = (i: number, patch: Partial<Metric>) =>
+    onChange(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+
+  return (
+    <RowList
+      rows={rows}
+      onMove={(i, d) => onChange(moved(rows, i, d))}
+      onRemove={(i) => onChange(rows.filter((_, j) => j !== i))}
+      onAdd={() => onChange([...rows, { label: "", value: "" }])}
+      addLabel="add metric"
+      empty="No metrics yet — e.g. Accuracy / 98.2%, Dataset / 12k images."
+    >
+      {(i) => (
+        <>
+          <input
+            className={cn(inputCls, "w-40 shrink-0")}
+            placeholder="Accuracy"
+            value={rows[i].label}
+            onChange={(e) => set(i, { label: e.target.value })}
+          />
+          <input
+            className={cn(inputCls, "flex-1")}
+            placeholder="98.2%"
+            value={rows[i].value}
+            onChange={(e) => set(i, { value: e.target.value })}
+          />
+        </>
+      )}
+    </RowList>
+  );
+}
+
+/** MILESTONES — a timeline inside a single entry. */
+export function MilestonesField({
+  value,
+  onChange,
+}: {
+  value: Milestone[];
+  onChange: (v: Milestone[]) => void;
+}) {
+  const rows = value ?? [];
+  const set = (i: number, patch: Partial<Milestone>) =>
+    onChange(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+
+  return (
+    <RowList
+      rows={rows}
+      onMove={(i, d) => onChange(moved(rows, i, d))}
+      onRemove={(i) => onChange(rows.filter((_, j) => j !== i))}
+      onAdd={() => onChange([...rows, { date: "", label: "", note: "" }])}
+      addLabel="add milestone"
+      empty="No milestones yet — stages inside this one entry, e.g. a promotion or a release."
+    >
+      {(i) => (
+        <>
+          <input
+            className={cn(inputCls, "w-32 shrink-0")}
+            placeholder="Mar 2024"
+            value={rows[i].date ?? ""}
+            onChange={(e) => set(i, { date: e.target.value })}
+          />
+          <input
+            className={cn(inputCls, "min-w-[10rem] flex-1")}
+            placeholder="Promoted to lead"
+            value={rows[i].label}
+            onChange={(e) => set(i, { label: e.target.value })}
+          />
+          <input
+            className={cn(inputCls, "w-full")}
+            placeholder="Optional note"
+            value={rows[i].note ?? ""}
+            onChange={(e) => set(i, { note: e.target.value })}
+          />
+        </>
+      )}
+    </RowList>
   );
 }
